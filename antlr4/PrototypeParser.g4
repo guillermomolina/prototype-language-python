@@ -356,8 +356,8 @@ singleExpression
     | New singleExpression                                                 # NewExpression
     | singleExpression arguments                                           # ArgumentsExpression
     | New '.' identifier                                                   # MetaExpression // new.target
-    | singleExpression {self.notLineTerminator()}? '++'                    # PostIncrementExpression
-    | singleExpression {self.notLineTerminator()}? '--'                    # PostDecreaseExpression
+    | singleExpression {self.notLineTerminator()}? op = '++'               # PostIncrementExpression
+    | singleExpression {self.notLineTerminator()}? op = '--'               # PostDecreaseExpression
     | Delete singleExpression                                              # DeleteExpression
     | Void singleExpression                                                # VoidExpression
     | Typeof singleExpression                                              # TypeofExpression

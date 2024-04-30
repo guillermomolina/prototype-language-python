@@ -6496,13 +6496,14 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
-        def PlusPlus(self):
-            return self.getToken(PrototypeParser.PlusPlus, 0)
         def singleExpression(self):
             return self.getTypedRuleContext(PrototypeParser.SingleExpressionContext,0)
 
+        def PlusPlus(self):
+            return self.getToken(PrototypeParser.PlusPlus, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPreIncrementExpression" ):
@@ -6669,13 +6670,14 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
-        def Not(self):
-            return self.getToken(PrototypeParser.Not, 0)
         def singleExpression(self):
             return self.getTypedRuleContext(PrototypeParser.SingleExpressionContext,0)
 
+        def Not(self):
+            return self.getToken(PrototypeParser.Not, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterNotExpression" ):
@@ -6696,13 +6698,14 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
-        def MinusMinus(self):
-            return self.getToken(PrototypeParser.MinusMinus, 0)
         def singleExpression(self):
             return self.getTypedRuleContext(PrototypeParser.SingleExpressionContext,0)
 
+        def MinusMinus(self):
+            return self.getToken(PrototypeParser.MinusMinus, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterPreDecreaseExpression" ):
@@ -6827,13 +6830,14 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
-        def Minus(self):
-            return self.getToken(PrototypeParser.Minus, 0)
         def singleExpression(self):
             return self.getTypedRuleContext(PrototypeParser.SingleExpressionContext,0)
 
+        def Minus(self):
+            return self.getToken(PrototypeParser.Minus, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterUnaryMinusExpression" ):
@@ -6884,6 +6888,7 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
         def singleExpression(self):
@@ -6969,13 +6974,14 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
-        def Plus(self):
-            return self.getToken(PrototypeParser.Plus, 0)
         def singleExpression(self):
             return self.getTypedRuleContext(PrototypeParser.SingleExpressionContext,0)
 
+        def Plus(self):
+            return self.getToken(PrototypeParser.Plus, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterUnaryPlusExpression" ):
@@ -7315,6 +7321,7 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
         def singleExpression(self):
@@ -7367,13 +7374,14 @@ class PrototypeParser ( PrototypeParserBase ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PrototypeParser.SingleExpressionContext
             super().__init__(parser)
+            self.op = None # Token
             self.copyFrom(ctx)
 
-        def BitNot(self):
-            return self.getToken(PrototypeParser.BitNot, 0)
         def singleExpression(self):
             return self.getTypedRuleContext(PrototypeParser.SingleExpressionContext,0)
 
+        def BitNot(self):
+            return self.getToken(PrototypeParser.BitNot, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBitNotExpression" ):
@@ -7869,7 +7877,7 @@ class PrototypeParser ( PrototypeParserBase ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 807
-                self.match(PrototypeParser.PlusPlus)
+                localctx.op = self.match(PrototypeParser.PlusPlus)
                 self.state = 808
                 self.singleExpression(34)
                 pass
@@ -7879,7 +7887,7 @@ class PrototypeParser ( PrototypeParserBase ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 809
-                self.match(PrototypeParser.MinusMinus)
+                localctx.op = self.match(PrototypeParser.MinusMinus)
                 self.state = 810
                 self.singleExpression(33)
                 pass
@@ -7889,7 +7897,7 @@ class PrototypeParser ( PrototypeParserBase ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 811
-                self.match(PrototypeParser.Plus)
+                localctx.op = self.match(PrototypeParser.Plus)
                 self.state = 812
                 self.singleExpression(32)
                 pass
@@ -7899,7 +7907,7 @@ class PrototypeParser ( PrototypeParserBase ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 813
-                self.match(PrototypeParser.Minus)
+                localctx.op = self.match(PrototypeParser.Minus)
                 self.state = 814
                 self.singleExpression(31)
                 pass
@@ -7909,7 +7917,7 @@ class PrototypeParser ( PrototypeParserBase ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 815
-                self.match(PrototypeParser.BitNot)
+                localctx.op = self.match(PrototypeParser.BitNot)
                 self.state = 816
                 self.singleExpression(30)
                 pass
@@ -7919,7 +7927,7 @@ class PrototypeParser ( PrototypeParserBase ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 817
-                self.match(PrototypeParser.Not)
+                localctx.op = self.match(PrototypeParser.Not)
                 self.state = 818
                 self.singleExpression(29)
                 pass
@@ -8372,7 +8380,7 @@ class PrototypeParser ( PrototypeParserBase ):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.notLineTerminator()")
                         self.state = 918
-                        self.match(PrototypeParser.PlusPlus)
+                        localctx.op = self.match(PrototypeParser.PlusPlus)
                         pass
 
                     elif la_ == 23:
@@ -8387,7 +8395,7 @@ class PrototypeParser ( PrototypeParserBase ):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.notLineTerminator()")
                         self.state = 921
-                        self.match(PrototypeParser.MinusMinus)
+                        localctx.op = self.match(PrototypeParser.MinusMinus)
                         pass
 
                     elif la_ == 24:

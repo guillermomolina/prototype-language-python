@@ -156,7 +156,7 @@ class WhileStmt(Statement):
 #
 # @orelse is not used as it is not present in grammar.
 """
-class ForStmt(Statement):
+class ForInStmt(Statement):
     def __init__(self, target, iter, body, orelse=None):
         super().__init__()
         self.target = target

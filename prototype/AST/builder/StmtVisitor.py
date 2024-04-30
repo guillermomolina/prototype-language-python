@@ -84,18 +84,34 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
         return AST.stmt.IfStmt(test=test, body=suite, orelse=orelse)
 
-    # def visitWhile_stmt(self, ctx:PrototypeParser.While_stmtContext):
-    #     test = self.visit(ctx.test())
-    #     suite = self.visit(ctx.suite())
+    def visitWhileStatement(self, ctx:PrototypeParser.WhileStatementContext):
+        test = self.visit(ctx.expressionSequence())
+        suite = self.visit(ctx.statement())
 
-    #     return AST.stmt.WhileStmt(test=test, body=suite, orelse=[])
+        return AST.stmt.WhileStmt(test=test, body=suite, orelse=[])
 
-    # def visitFor_stmt(self, ctx:PrototypeParser.For_stmtContext):
-    #     expr = self.visit(ctx.nameaccess())
-    #     test = self.visit(ctx.test())
-    #     suite = self.visit(ctx.suite())
+    def visitForInStatement(self, ctx:PrototypeParser.ForInStatementContext):
+        if ctx.singleExpression() is not None:
+            expr = self.visit(ctx.singleExpression())
+        else:
+            raise NotImplementedError()
+        test = self.visit(ctx.expressionSequence())
+        suite = self.visit(ctx.statement())
 
-    #     return AST.stmt.ForStmt(target=expr, iter=test, body=suite)
+        return AST.stmt.ForInStmt(target=expr, iter=test, body=suite)
+
+    def visitForStatement(self, ctx:PrototypeParser.ForStatementContext):
+        raise NotImplementedError()
+        # if ctx.expressionSequence() is not None:
+        #     expr = self.visit(ctx.expressionSequence())
+        # elif ctx.variableDeclarationList() is not None:
+        #     expr = self.visit(ctx.variableDeclarationList())
+        # else:
+        #     raise SyntaxError()
+        # test = self.visit(ctx.expressionSequence())
+        # suite = self.visit(ctx.statement())
+
+        # return AST.stmt.ForStmt(target=expr, iter=test, body=suite)
 
     def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
         name = ctx.identifier().getText()
