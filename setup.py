@@ -46,6 +46,12 @@ def get_install_requirements():
         return requirements
 
 
+def get_dev_requirements():
+    with open('dev-requirements.txt', encoding='utf-8') as file:
+        requirements = file.read().splitlines()
+        return requirements
+
+
 # Make sure everything is relative to setup.py
 install_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(install_path)
@@ -70,7 +76,7 @@ with open('README.md', encoding='utf-8') as readme:
 if __name__ == "__main__":
 
     INSTALL_REQUIRES = get_install_requirements()
-    #DEV_REQUIRES = get_dev_requirements()
+    DEV_REQUIRES = get_dev_requirements()
     #TESTS_REQUIRES = get_test_requirements()
 
     setup(

@@ -32,6 +32,9 @@
 			},
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.autopep8",
 				"mike-lischke.vscode-antlr4"
 			]
 		}

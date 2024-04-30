@@ -101,8 +101,8 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         return AST.expr.UnaryOp(op=ctx.op.text, operand=operand)
 
 
-    def visitParenExpr(self, ctx:PrototypeParser.ParenthesizedExpressionContext):
-        return self.visit(ctx.test())
+    def visitParenthesizedExpression(self, ctx:PrototypeParser.ParenthesizedExpressionContext):
+        return self.visit(ctx.expressionSequence())
 
 
     def visitAtom(self, ctx:PrototypeParser.LiteralExpressionContext):
@@ -116,32 +116,47 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         # Visit other nodes
         return self.visitChildren(ctx)
 
+    #
+    # Assignment: AssignmentExpression, AssignmentOperatorExpression
+    #
+
+    def visitAssignmentExpression(self, ctx:PrototypeParser.AssignmentExpressionContext):
+        name = self.visit(ctx.singleExpression(0))
+        value = self.visit(ctx.singleExpression(1))
+
+        return AST.stmt.AssignStmt(target=name, value=value)
+
+
+    def visitAssignmentOperatorExpression(self, ctx:PrototypeParser.AssignmentOperatorExpressionContext):
+        name = self.visit(ctx.singleExpression(0))
+        value = self.visit(ctx.singleExpression(1))
+        op = ctx.assignmentOperator().getText()
+
+        return AST.stmt.AugAssignStmt(name=name, value=value, op=op)
 
     #
-    # Name access: PlainName, FuncInvoke, SubName
+    # Name access: Identifier, ArgumentsExpression, SubName
     #
 
     def nameContextFor(self, ctx):
-        if type(ctx.parentCtx) is PrototypeParser.ExprStmtAssignContext or type(ctx.parentCtx) is PrototypeParser.ExprStmtAugmentedContext:
+        parentContext = ctx.parentCtx.parentCtx
+        if type(ctx.parentCtx) is PrototypeParser.AssignmentExpressionContext or type(ctx.parentCtx) is PrototypeParser.AssignmentOperatorExpressionContext:
             return MemoryContext.Store
         else:
             return MemoryContext.Load
 
-
-    def visitPlainName(self, ctx:PrototypeParser.IdentifierExpressionContext):
+    def visitIdentifier(self, ctx:PrototypeParser.IdentifierContext):
         context = self.nameContextFor(ctx)
-        return AST.expr.Name(id=ctx.NAME().getText(), ctx=context)
+        return AST.expr.Name(id=ctx.getText(), ctx=context)
 
-
-    def visitFuncInvoke(self, ctx:PrototypeParser.ArgumentsExpressionContext):
-        funcName = self.visit(ctx.nameaccess())
+    def visitArgumentsExpression(self, ctx:PrototypeParser.ArgumentsExpressionContext):
+        funcName = self.visit(ctx.singleExpression())
         args = []
 
-        if ctx.arglist() != None:
-            for argStmt in ctx.arglist().test():
-                arg = self.visit(argStmt)
-                if arg != None:
-                    args.append(arg)
+        for argStmt in ctx.arguments().argument():
+            arg = self.visit(argStmt)
+            if arg != None:
+                args.append(arg)
 
         return AST.expr.CallExpr(func=funcName, args=args)
 

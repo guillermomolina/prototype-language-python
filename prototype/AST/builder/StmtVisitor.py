@@ -105,20 +105,6 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     def visitExpressionStatement(self, ctx:PrototypeParser.ExpressionStatementContext):
         return self.visit(ctx.expressionSequence())
 
-    # def visitExprStmtAssign(self, ctx:PrototypeParser.ExprStmtAssignContext):
-    #     name = self.visit(ctx.nameaccess())
-    #     expr = self.visit(ctx.test())
-
-    #     return AST.stmt.AssignStmt(target=name, value=expr)
-
-
-    # def visitExprStmtAugmented(self, ctx:PrototypeParser.ExprStmtAugmentedContext):
-    #     name = self.visit(ctx.nameaccess())
-    #     value = self.visit(ctx.test())
-    #     op = ctx.augassign().getText()
-
-    #     return AST.stmt.AugAssignStmt(name=name, value=value, op=op)
-
     # #
     # # Control flow statements
     # #

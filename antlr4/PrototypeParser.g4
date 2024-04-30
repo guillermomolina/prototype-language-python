@@ -1,33 +1,26 @@
 /*
  * The MIT License (MIT)
- *
- * Copyright (c) 2014 by Bart Kiers (original author) and Alexandre Vitorelli (contributor -> ported to CSharp)
- * Copyright (c) 2017-2020 by Ivan Kochurkin (Positive Technologies):
-    added ECMAScript 6 support, cleared and transformed to the universal grammar.
- * Copyright (c) 2018 by Juan Alvarez (contributor -> ported to Go)
- * Copyright (c) 2019 by Student Main (contributor -> ES2020)
+ * 
+ * Copyright (c) 2014 by Bart Kiers (original author) and Alexandre Vitorelli (contributor -> ported
+ * to CSharp) Copyright (c) 2017-2020 by Ivan Kochurkin (Positive Technologies): added ECMAScript 6
+ * support, cleared and transformed to the universal grammar. Copyright (c) 2018 by Juan Alvarez
+ * (contributor -> ported to Go) Copyright (c) 2019 by Student Main (contributor -> ES2020)
  * Copyright (c) 2024 by Guillermo Adrián Molina (converted to Prototype)
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
@@ -36,7 +29,7 @@
 parser grammar PrototypeParser;
 
 options {
-    language=Python3;
+    language = Python3;
     tokenVocab = PrototypeLexer;
     superClass = PrototypeParserBase;
 }
@@ -316,7 +309,7 @@ arrayLiteral
 
 // Prototype supports arrasys like [,,1,2,,].
 elementList
-    : ','* arrayElement? (','+ arrayElement) * ','* // Yes, everything is optional
+    : ','* arrayElement? (','+ arrayElement)* ','* // Yes, everything is optional
     ;
 
 arrayElement
@@ -376,19 +369,19 @@ singleExpression
     | '!' singleExpression                                                 # NotExpression
     | Await singleExpression                                               # AwaitExpression
     | <assoc = right> singleExpression '**' singleExpression               # PowerExpression
-    | singleExpression op=('*' | '/' | '%') singleExpression                  # MultiplicativeExpression
-    | singleExpression op=('+' | '-') singleExpression                        # AdditiveExpression
-    | singleExpression op='??' singleExpression                               # CoalesceExpression
-    | singleExpression op=('<<' | '>>' | '>>>') singleExpression              # BitShiftExpression
-    | singleExpression op=('<' | '>' | '<=' | '>=') singleExpression          # RelationalExpression
-    | singleExpression op=Instanceof singleExpression                         # InstanceofExpression
-    | singleExpression op=In singleExpression                                 # InExpression
-    | singleExpression op=('==' | '!=' | '===' | '!==') singleExpression      # EqualityExpression
-    | singleExpression op='&' singleExpression                                # BitAndExpression
-    | singleExpression op='^' singleExpression                                # BitXOrExpression
-    | singleExpression op='|' singleExpression                                # BitOrExpression
-    | singleExpression op='&&' singleExpression                               # LogicalAndExpression
-    | singleExpression op='||' singleExpression                               # LogicalOrExpression
+    | singleExpression op = ('*' | '/' | '%') singleExpression             # MultiplicativeExpression
+    | singleExpression op = ('+' | '-') singleExpression                   # AdditiveExpression
+    | singleExpression op = '??' singleExpression                          # CoalesceExpression
+    | singleExpression op = ('<<' | '>>' | '>>>') singleExpression         # BitShiftExpression
+    | singleExpression op = ('<' | '>' | '<=' | '>=') singleExpression     # RelationalExpression
+    | singleExpression op = Instanceof singleExpression                    # InstanceofExpression
+    | singleExpression op = In singleExpression                            # InExpression
+    | singleExpression op = ('==' | '!=' | '===' | '!==') singleExpression # EqualityExpression
+    | singleExpression op = '&' singleExpression                           # BitAndExpression
+    | singleExpression op = '^' singleExpression                           # BitXOrExpression
+    | singleExpression op = '|' singleExpression                           # BitOrExpression
+    | singleExpression op = '&&' singleExpression                          # LogicalAndExpression
+    | singleExpression op = '||' singleExpression                          # LogicalOrExpression
     | singleExpression '?' singleExpression ':' singleExpression           # TernaryExpression
     | <assoc = right> singleExpression '=' singleExpression                # AssignmentExpression
     | <assoc = right> singleExpression assignmentOperator singleExpression # AssignmentOperatorExpression
@@ -559,7 +552,7 @@ keyword
     | Protected
     | Static
     | Yield
-    | YieldStar    
+    | YieldStar
     | Async
     | Await
     | From

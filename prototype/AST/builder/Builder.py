@@ -7,16 +7,37 @@ from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 from prototype.AST import ast
 
 class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
+    def visitChildren(self, node):
+        result = self.defaultResult()
+        n = node.getChildCount()
+        for i in range(n):
+            if not self.shouldVisitNextChild(node, result):
+                return result
+
+            c = node.getChild(i)
+            childResult = c.accept(self)
+            result = self.aggregateResult(result, childResult)
+
+        if not isinstance(result, ast.AST):
+            raise NotImplementedError()
+        return result
 
     #
     # Visit parse tree produced from a file
     #
     def visitProgram(self, ctx:PrototypeParser.ProgramContext):
+        statements = []
 
         if ctx.sourceElements() != None:
-            return ast.Interactive(self.visit(ctx.sourceElements()))
+            for sourceElement in ctx.sourceElements().sourceElement():
+                statement =  self.visit(sourceElement.statement())
+                if statement != None:
+                    if type(statement) is list:
+                        statements += statement
+                    else:
+                        statements.append(statement)
 
-        return None
+        return ast.Module(body=statements)
 
     # #
     # # Visit parse tree produced from a file
