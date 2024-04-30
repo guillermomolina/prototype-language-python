@@ -6,6 +6,7 @@
     added ECMAScript 6 support, cleared and transformed to the universal grammar.
  * Copyright (c) 2018 by Juan Alvarez (contributor -> ported to Go)
  * Copyright (c) 2019 by Student Main (contributor -> ES2020)
+ * Copyright (c) 2024 by Guillermo Adrián Molina (converted to Prototype)
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
