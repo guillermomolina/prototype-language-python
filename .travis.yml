@@ -1,0 +1,42 @@
+language: python
+
+matrix:
+  allow_failures:
+    - os: osx
+  include:
+    - python: 3.5
+      os: linux
+    - python: nightly
+      os: linux
+    - language: generic
+      os: osx
+
+
+before_install:
+  - curl -O http://www.antlr.org/download/antlr-4.5.1-complete.jar
+  - antlr4='java -jar antlr-4.5.1-complete.jar'
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install python3; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then virtualenv --python=python3 env; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source env/bin/activate; fi
+  - python --version; pip --version
+
+# command to install dependencies
+install:
+  - "pip install coverage"
+  - "pip install coveralls"
+  - "pip install -r requirements.txt"
+  - "$antlr4 -visitor prototype/parser/Prototype.g4"
+  - "pip install ."
+  # Add subprocess support for coverage
+  - SPACK=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+  - printf "\nimport coverage; coverage.process_startup()\n" >> "$SPACK/sitecustomize.py"
+
+# command to run tests
+script:
+  - "coverage run setup.py test"
+  - "coverage combine"
+  - "coverage report"
+
+after_success:
+  coveralls
