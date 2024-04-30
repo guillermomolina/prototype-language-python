@@ -100,7 +100,7 @@ if __name__ == "__main__":
         install_requires=INSTALL_REQUIRES,
         entry_points={
             'console_scripts': [
-                'jb7pm = jb7pm.__main__:main'
+                'prototype = prototype.prototypeapp:main'
             ]
         },
         classifiers=[

@@ -1,4 +1,4 @@
-__version__ = "1.2.3"
+__version__ = "0.0.1"
 AUTHOR = "Guillermo Adrián Molina"
 AUTHOR_EMAIL = "guillermoadrianmolina@gmail.com"
 NAME = "prototype-language"

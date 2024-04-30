@@ -147,14 +147,16 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
         return AST.expr.CallExpr(func=funcName, args=args)
 
-    def visitDottedName(self, ctx: PrototypeParser.MemberDotExpressionContext):
-        left = self.visit(ctx.nameaccess())
-        attrName = ctx.NAME().getText()
+    def visitMemberDotExpression(self, ctx: PrototypeParser.MemberDotExpressionContext):
+        left = self.visit(ctx.singleExpression())
+        attrName = ctx.identifierName().getText()
         return AST.stmt.Attribute(value=left, attr=attrName, ctx=MemoryContext.Load)
 
-    def visitSubName(self, ctx: PrototypeParser.MemberIndexExpressionContext):
-        leftNode = self.visit(ctx.nameaccess())
-        subscript = self.visit(ctx.subscript())
+    def visitMemberIndexExpression(self, ctx: PrototypeParser.MemberIndexExpressionContext):
+        leftNode = self.visit(ctx.singleExpression())
+        if len(ctx.expressionSequence().singleExpression()) > 1:
+            raise NotImplementedError()
+        subscript = AST.stmt.Index(self.visit(ctx.expressionSequence().singleExpression(0)))
 
         context = self.nameContextFor(ctx)
 

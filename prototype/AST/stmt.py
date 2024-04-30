@@ -282,8 +282,10 @@ class Attribute(Statement):
         value = self.value.eval()
 
         if self.ctx == MemoryContext.Load:
-            if hasattr(value, self.attr):
-                return getattr(value, self.attr)
+            # if hasattr(value, self.attr):
+            #     return getattr(value, self.attr)
+            if self.attr in value:
+                return value.get(self.attr)
             else:
                 msg = "object has no attribute %s" % self.attr
                 raise runtime.Errors.AttributeError(msg)
