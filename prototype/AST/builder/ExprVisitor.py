@@ -4,47 +4,31 @@ from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 from prototype import AST
 from prototype.AST.ast import MemoryContext
 
+
 class ExprVisitorMixin(PrototypeParserVisitor):
 
     #
     # Tests (comparisons)
     #
 
-    def visitComparison(self, ctx:PrototypeParser.RelationalExpressionContext):
-        left  = self.visit(ctx.test(0))
-        right = self.visit(ctx.test(1))
-        op = ctx.comp_op().getText()
-
-        firstSymbolType = ctx.comp_op().children[0].symbol.type
-
-        if firstSymbolType == PrototypeParser.IN:
-            op = AST.expr.Compare.Op.IN
-        elif firstSymbolType == PrototypeParser.IS:
-            op = AST.expr.Compare.Op.IS
-
-        if len(ctx.comp_op().children) == 2:
-            secondSymbolType = ctx.comp_op().children[1].symbol.type
-
-            if firstSymbolType == PrototypeParser.NOT and secondSymbolType == PrototypeParser.IN:
-                op = AST.expr.Compare.Op.NOT_IN
-            elif firstSymbolType == PrototypeParser.IS and secondSymbolType == PrototypeParser.NOT:
-                op = AST.expr.Compare.Op.IS_NOT
-            else:
-                raise ValueError("Unexpected binary comparison operation")
+    def visitRelationalExpression(self, ctx: PrototypeParser.RelationalExpressionContext):
+        left = self.visit(ctx.singleExpression(0))
+        right = self.visit(ctx.singleExpression(1))
+        op = ctx.op.text
 
         return AST.expr.BinaryComp(left=left, right=right, op=op)
 
-    def visitNotTest(self, ctx:PrototypeParser.NotExpressionContext):
+    def visitNotExpression(self, ctx: PrototypeParser.NotExpressionContext):
         test = self.visit(ctx.test())
         return AST.expr.UnaryComp(operand=test, op=AST.expr.Compare.Op.NOT)
 
-    def visitAndTest(self, ctx:PrototypeParser.LogicalAndExpressionContext):
-        left  = self.visit(ctx.test(0))
+    def visitLogicalAndExpression(self, ctx: PrototypeParser.LogicalAndExpressionContext):
+        left = self.visit(ctx.test(0))
         right = self.visit(ctx.test(1))
         return AST.expr.BinaryComp(left=left, right=right, op=AST.expr.Compare.Op.AND)
 
-    def visitOrTest(self, ctx:PrototypeParser.LogicalOrExpressionContext):
-        left  = self.visit(ctx.test(0))
+    def visitLogicalOrExpression(self, ctx: PrototypeParser.LogicalOrExpressionContext):
+        left = self.visit(ctx.test(0))
         right = self.visit(ctx.test(1))
         return AST.expr.BinaryComp(left=left, right=right, op=AST.expr.Compare.Op.OR)
 
@@ -53,20 +37,20 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #
 
     binaryExprTable = {
-        PrototypeParser.Plus                 : AST.expr.AddOp,
-        PrototypeParser.Minus                : AST.expr.SubOp,
-        PrototypeParser.Multiply             : AST.expr.MultOp,
-        PrototypeParser.Divide               : AST.expr.DivOp,
-        PrototypeParser.Modulus              : AST.expr.ModOp,
-        PrototypeParser.LeftShiftArithmetic  : AST.expr.LshiftOp,
-        PrototypeParser.RightShiftArithmetic : AST.expr.RshiftOp,
-        PrototypeParser.BitAnd               : AST.expr.BitAndOp,
-        PrototypeParser.BitXOr               : AST.expr.BitXorOp,
-        PrototypeParser.BitOr                : AST.expr.BitOrOp,
+        PrototypeParser.Plus: AST.expr.AddOp,
+        PrototypeParser.Minus: AST.expr.SubOp,
+        PrototypeParser.Multiply: AST.expr.MultOp,
+        PrototypeParser.Divide: AST.expr.DivOp,
+        PrototypeParser.Modulus: AST.expr.ModOp,
+        PrototypeParser.LeftShiftArithmetic: AST.expr.LshiftOp,
+        PrototypeParser.RightShiftArithmetic: AST.expr.RshiftOp,
+        PrototypeParser.BitAnd: AST.expr.BitAndOp,
+        PrototypeParser.BitXOr: AST.expr.BitXorOp,
+        PrototypeParser.BitOr: AST.expr.BitOrOp,
     }
 
     def visitGenericExpr(self, ctx):
-        left  = self.visit(ctx.singleExpression(0))
+        left = self.visit(ctx.singleExpression(0))
         right = self.visit(ctx.singleExpression(1))
 
         try:
@@ -74,44 +58,48 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         except KeyError:
             raise ValueError("Unexpected op type")
 
-    def visitMulDivMod(self, ctx:PrototypeParser.MultiplicativeExpressionContext):
+    def visitMultiplicativeExpression(self, ctx: PrototypeParser.MultiplicativeExpressionContext):
         return self.visitGenericExpr(ctx)
 
-    def visitAdditiveExpression(self, ctx:PrototypeParser.AdditiveExpressionContext):
+    def visitAdditiveExpression(self, ctx: PrototypeParser.AdditiveExpressionContext):
         return self.visitGenericExpr(ctx)
 
-    def visitShifts(self, ctx:PrototypeParser.BitShiftExpressionContext):
+    def visitBitShiftExpression(self, ctx: PrototypeParser.BitShiftExpressionContext):
         return self.visitGenericExpr(ctx)
 
-    def visitBitAnd(self, ctx:PrototypeParser.BitAndExpressionContext):
+    def visitBitAndExpression(self, ctx: PrototypeParser.BitAndExpressionContext):
         return self.visitGenericExpr(ctx)
 
-    def visitBitXor(self, ctx:PrototypeParser.BitXOrExpressionContext):
+    def visitBitXOrExpression(self, ctx: PrototypeParser.BitXOrExpressionContext):
         return self.visitGenericExpr(ctx)
 
-    def visitBitOr(self, ctx:PrototypeParser.BitOrExpressionContext):
+    def visitBitOrExpression(self, ctx: PrototypeParser.BitOrExpressionContext):
         return self.visitGenericExpr(ctx)
 
     #
     # Factor rule
     #
 
-    def visitUnaryExpr(self, ctx:PrototypeParser.UnaryMinusExpressionContext):
+    def visitUnaryExpr(self, ctx: PrototypeParser.UnaryMinusExpressionContext):
         operand = ctx.factor().accept(self)
         return AST.expr.UnaryOp(op=ctx.op.text, operand=operand)
 
-
-    def visitParenthesizedExpression(self, ctx:PrototypeParser.ParenthesizedExpressionContext):
+    def visitParenthesizedExpression(self, ctx: PrototypeParser.ParenthesizedExpressionContext):
         return self.visit(ctx.expressionSequence())
 
+    def visitLiteral(self, ctx: PrototypeParser.LiteralContext):
+        if ctx.NullLiteral() is not None:
+            return AST.expr.NameConstant('null')
+        
+        if ctx.BooleanLiteral() is not None:
+            return AST.expr.NameConstant(ctx.BooleanLiteral().getText())
 
-    def visitAtom(self, ctx:PrototypeParser.LiteralExpressionContext):
-        if ctx.NONE() != None:
-            return AST.expr.NameConstant('None')
-        elif ctx.TRUE() != None:
-            return AST.expr.NameConstant('True')
-        elif ctx.FALSE() != None:
-            return AST.expr.NameConstant('False')
+        if ctx.StringLiteral() is not None:
+            text = ctx.StringLiteral().getText()[1:-1]
+            return AST.expr.Str(text)
+
+        if ctx.RegularExpressionLiteral() is not None:
+            raise NotImplementedError()
 
         # Visit other nodes
         return self.visitChildren(ctx)
@@ -120,14 +108,13 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     # Assignment: AssignmentExpression, AssignmentOperatorExpression
     #
 
-    def visitAssignmentExpression(self, ctx:PrototypeParser.AssignmentExpressionContext):
+    def visitAssignmentExpression(self, ctx: PrototypeParser.AssignmentExpressionContext):
         name = self.visit(ctx.singleExpression(0))
         value = self.visit(ctx.singleExpression(1))
 
         return AST.stmt.AssignStmt(target=name, value=value)
 
-
-    def visitAssignmentOperatorExpression(self, ctx:PrototypeParser.AssignmentOperatorExpressionContext):
+    def visitAssignmentOperatorExpression(self, ctx: PrototypeParser.AssignmentOperatorExpressionContext):
         name = self.visit(ctx.singleExpression(0))
         value = self.visit(ctx.singleExpression(1))
         op = ctx.assignmentOperator().getText()
@@ -140,16 +127,16 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
     def nameContextFor(self, ctx):
         parentContext = ctx.parentCtx.parentCtx
-        if type(ctx.parentCtx) is PrototypeParser.AssignmentExpressionContext or type(ctx.parentCtx) is PrototypeParser.AssignmentOperatorExpressionContext:
+        if type(parentContext) is PrototypeParser.AssignmentExpressionContext or type(parentContext) is PrototypeParser.AssignmentOperatorExpressionContext:
             return MemoryContext.Store
         else:
             return MemoryContext.Load
 
-    def visitIdentifier(self, ctx:PrototypeParser.IdentifierContext):
+    def visitIdentifier(self, ctx: PrototypeParser.IdentifierContext):
         context = self.nameContextFor(ctx)
         return AST.expr.Name(id=ctx.getText(), ctx=context)
 
-    def visitArgumentsExpression(self, ctx:PrototypeParser.ArgumentsExpressionContext):
+    def visitArgumentsExpression(self, ctx: PrototypeParser.ArgumentsExpressionContext):
         funcName = self.visit(ctx.singleExpression())
         args = []
 
@@ -160,21 +147,18 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
         return AST.expr.CallExpr(func=funcName, args=args)
 
-
-    def visitDottedName(self, ctx:PrototypeParser.MemberDotExpressionContext):
+    def visitDottedName(self, ctx: PrototypeParser.MemberDotExpressionContext):
         left = self.visit(ctx.nameaccess())
         attrName = ctx.NAME().getText()
         return AST.stmt.Attribute(value=left, attr=attrName, ctx=MemoryContext.Load)
 
-
-    def visitSubName(self, ctx:PrototypeParser.MemberIndexExpressionContext):
+    def visitSubName(self, ctx: PrototypeParser.MemberIndexExpressionContext):
         leftNode = self.visit(ctx.nameaccess())
         subscript = self.visit(ctx.subscript())
 
         context = self.nameContextFor(ctx)
 
         return AST.stmt.Subscript(value=leftNode, slice=subscript, ctx=context)
-
 
     #
     # Index and slice operations
@@ -217,7 +201,6 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #         result.add(self.visit(test))
     #     return AST.expr.SetContainer(result)
 
-
     # def visitDictormaker(self, ctx:PrototypeParser.DictormakerContext):
     #     if ctx.test(0) != None:
     #         left = self.visit(ctx.test(0))
@@ -236,11 +219,38 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #         else:
     #             return result
 
-    # def visitListMaker(self, ctx:PrototypeParser.ListMakerContext):
-    #     if ctx.testlist_comp() == None:
-    #         return AST.expr.ListContainer([])
+    def visitObjectLiteral(self, ctx:PrototypeParser.ObjectLiteralContext):
+        result = AST.expr.DictContainer({})
 
-    #     return AST.expr.ListContainer(self.visit(ctx.testlist_comp()))
+        for propertyAssignment in ctx.propertyAssignment():
+            right = self.visit(propertyAssignment)
+            result = result.copy()
+            result.update(right)
+
+        return result
+
+    def visitPropertyExpressionAssignment(self, ctx:PrototypeParser.PropertyExpressionAssignmentContext):
+        left = self.visit(ctx.propertyName())
+        right = self.visit(ctx.singleExpression())
+        return AST.expr.DictContainer({left : right})
+
+    def visitPropertyName(self, ctx:PrototypeParser.PropertyNameContext):
+        if ctx.StringLiteral() is not None:
+            text = ctx.StringLiteral().getText()[1:-1]
+            return AST.expr.Str(text)
+        
+        if ctx.numericLiteral() is not None:
+            return self.visit(ctx.numericLiteral())
+        
+        raise NotImplementedError()
+
+    def visitArrayLiteral(self, ctx:PrototypeParser.ArrayLiteralContext):
+        elements = []
+
+        for arrayElement in ctx.elementList().arrayElement():
+            elements.append(self.visit(arrayElement))
+
+        return AST.expr.ListContainer(elements)
 
     # def visitTupleMaker(self, ctx:PrototypeParser.TupleMakerContext):
     #     if ctx.testlist_comp() == None:
@@ -275,7 +285,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     # Strings and numbers
     #
 
-    def visitNumericLiteral(self, ctx:PrototypeParser.NumericLiteralContext):
+    def visitNumericLiteral(self, ctx: PrototypeParser.NumericLiteralContext):
 
         if ctx.DecimalLiteral() != None:
             try:
@@ -300,13 +310,5 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         elif ctx.OctalIntegerLiteral2() != None:
             oct = int(ctx.OctalIntegerLiteral2().getText(), 8)
             return AST.expr.Num(oct)
-
-        raise ValueError()
-
-    def visitString(self, ctx:PrototypeParser.TemplateStringLiteralContext):
-        node = ctx.STRING_LITERAL()
-        if node != None:
-            text = node.getText()[1:-1]
-            return AST.expr.Str(text)
 
         raise ValueError()

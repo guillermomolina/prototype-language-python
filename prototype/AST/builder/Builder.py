@@ -18,7 +18,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
             childResult = c.accept(self)
             result = self.aggregateResult(result, childResult)
 
-        if not isinstance(result, ast.AST):
+        if not isinstance(result, (ast.AST, list)):
             raise NotImplementedError()
         return result
 
@@ -29,13 +29,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
         statements = []
 
         if ctx.sourceElements() != None:
-            for sourceElement in ctx.sourceElements().sourceElement():
-                statement =  self.visit(sourceElement.statement())
-                if statement != None:
-                    if type(statement) is list:
-                        statements += statement
-                    else:
-                        statements.append(statement)
+            statements = self.visit(ctx.sourceElements())
 
         return ast.Module(body=statements)
 

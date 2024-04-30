@@ -361,12 +361,12 @@ singleExpression
     | Delete singleExpression                                              # DeleteExpression
     | Void singleExpression                                                # VoidExpression
     | Typeof singleExpression                                              # TypeofExpression
-    | '++' singleExpression                                                # PreIncrementExpression
-    | '--' singleExpression                                                # PreDecreaseExpression
-    | '+' singleExpression                                                 # UnaryPlusExpression
-    | '-' singleExpression                                                 # UnaryMinusExpression
-    | '~' singleExpression                                                 # BitNotExpression
-    | '!' singleExpression                                                 # NotExpression
+    | op = '++' singleExpression                                           # PreIncrementExpression
+    | op = '--' singleExpression                                           # PreDecreaseExpression
+    | op = '+' singleExpression                                            # UnaryPlusExpression
+    | op = '-' singleExpression                                            # UnaryMinusExpression
+    | op = '~' singleExpression                                            # BitNotExpression
+    | op = '!' singleExpression                                            # NotExpression
     | Await singleExpression                                               # AwaitExpression
     | <assoc = right> singleExpression '**' singleExpression               # PowerExpression
     | singleExpression op = ('*' | '/' | '%') singleExpression             # MultiplicativeExpression

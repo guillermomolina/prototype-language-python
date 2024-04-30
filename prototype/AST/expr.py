@@ -148,7 +148,7 @@ class UnaryComp(Compare):
 # Represents None, False and True literals.
 """
 class NameConstant(Expression):
-    nameTable = { 'None' : None, 'True': True, 'False': False }
+    nameTable = { 'null' : None, 'true': True, 'false': False }
 
     def __init__(self, name):
         super().__init__()
@@ -273,7 +273,8 @@ class DictContainer(CollectionContainer):
         return DictContainer(self.value.copy())
 
     def update(self, right):
-        return DictContainer(self.value.update(right.value))
+        self.value.update(right.value)
+        # return DictContainer(self.value.update(right.value))
 
     def eval(self):
         result = {}
