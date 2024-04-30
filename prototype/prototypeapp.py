@@ -5,6 +5,7 @@ from enum import Enum
 import antlr4
 from antlr4.tree.Trees import Trees
 
+from prototype.version import __version__
 from prototype.AST.builder.Builder import CustomVisitor
 from prototype.parser.CST import CstFlattened, CstFiltered
 from prototype.parser.Errors import CustomErrorStrategy, CustomErrorListener
@@ -140,6 +141,10 @@ def main():
                            help="Don't print version and copyright messages on interactive startup")
     argParser.add_argument('-i', dest='force_promt', action='store_true',
                            help='forces a prompt even if stdin does not appear to be a terminal')
+    argParser.add_argument('-V', '--version',
+                        help='Print version information and quit',
+                        action='version',
+                        version='%(prog)s version ' + __version__)
     #
     # Parse arguments
     #

@@ -1,0 +1,8 @@
+__version__ = "1.2.3"
+AUTHOR = "Guillermo Adrián Molina"
+AUTHOR_EMAIL = "guillermoadrianmolina@gmail.com"
+NAME = "prototype-language"
+PACKAGE_URL = "https://github.com/guillermomolina/prototype-language/"
+KEYWORDS = "prototype language"
+DESCRIPTION = "Prototype LAnguage"
+LICENSE = "LICENSE"
