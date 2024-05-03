@@ -13,17 +13,17 @@ from prototype import runtime
 #   @args - list of arguments (just names)
 #   @body - list of statements, which form functions body
 #
-# Every function has name which is written to the outer namespace.
-# For the top-level function definitions, the outer namespace is the global namespace.
-# For nested functions its the namespace of the outer function.
+# Every function has name which is written to the outer scope.
+# For the top-level function definitions, the outer scope is the global scope.
+# For nested functions its the scope of the outer function.
 #
-# Our way to implement name scoping is to set current namespace during the evaluation of ANY *STATEMENT*
+# Our way to implement name scoping is to set current scope during the evaluation of ANY *STATEMENT*
 # Actually, we'll need to set the new (and then back the old one) when evaluating only functions,
 # as there are no scoping rules for other statements; thus, @Name expression will need to check
-# only single global variable - current namespace, and function calls will switch scopes.
+# only single global variable - current scope, and function calls will switch scopes.
 #
 # This solution is far from perfect. However, it just works as there is no need for modules.
-# Implementing modules will require providing each @Name node an ability to get a proper namespace.
+# Implementing modules will require providing each @Name node an ability to get a proper scope.
 """
 class FunctionDef(Statement):
     def __init__(self, name:str, args:list, body:list):
@@ -32,17 +32,17 @@ class FunctionDef(Statement):
         self.args = args
         self.body = body
 
-    def getNamespace(self) -> runtime.Memory.Namespace:
-        return runtime.Memory.CurrentNamespace
+    def getScope(self) -> runtime.Memory.Scope:
+        return runtime.Memory.CurrentScope
 
     def eval(self) -> None:
 
-        declarationNamespace = self.getNamespace()
+        declarationScope = self.getScope()
 
         def container(*args):
-            namespace = runtime.Memory.Namespace(outerScope=declarationNamespace)
-            previousNamespace = runtime.Memory.CurrentNamespace
-            runtime.Memory.CurrentNamespace = namespace
+            scope = runtime.Memory.Scope(outerScope=declarationScope)
+            previousScope = runtime.Memory.CurrentScope
+            runtime.Memory.CurrentScope = scope
 
             if len(args) != len(self.args):
                 message = "%s() takes %d positional arguments but %d were given" % \
@@ -50,7 +50,7 @@ class FunctionDef(Statement):
                 raise runtime.Errors.TypeError(message)
 
             for pair in zip (self.args, args):
-                namespace.set(name=pair[0], value=pair[1])
+                scope.set(name=pair[0], value=pair[1])
 
             returnValue = None
 
@@ -62,12 +62,12 @@ class FunctionDef(Statement):
                             returnValue = res.toEval.eval()
                         break
 
-            runtime.Memory.CurrentNamespace = previousNamespace
+            runtime.Memory.CurrentScope = previousScope
             return returnValue
 
         # Finally, write the function container to the memory.
         # Call to the container will trigger eval of function body
-        declarationNamespace.set(self.name, container)
+        declarationScope.set(self.name, container)
         return None
 
 
@@ -173,11 +173,11 @@ class ForInStmt(Statement):
         result = []
 
         # Check if target name exists. If no - create it.
-        #runtime.Memory.CurrentNamespace.get(self)
+        #runtime.Memory.CurrentScope.get(self)
 
         for x in self.iter.eval():
             # Set target to the current value
-            runtime.Memory.CurrentNamespace.set(self.target.id, x)
+            runtime.Memory.CurrentScope.set(self.target.id, x)
 
             shouldBreak = False
             for stmt in self.body:
@@ -231,7 +231,7 @@ class AssignStmt(Statement):
             lValue.collection[lValue.index] = rValue
             return
 
-        runtime.Memory.CurrentNamespace.set(name=lValue, value=rValue)
+        runtime.Memory.CurrentScope.set(name=lValue, value=rValue)
 
 class AugAssignStmt(AssignStmt):
     opTable = {

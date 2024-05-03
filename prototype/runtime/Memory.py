@@ -1,14 +1,14 @@
 
 
 #
-# Looks like we have to pass namespace instance to every @Name node;
-# Alternatively, we can make every node being able to retreive namespace by its own.
+# Looks like we have to pass scope instance to every @Name node;
+# Alternatively, we can make every node being able to retreive scope by its own.
 # How? Probably, enclosing statement should provide such API, so we'll pass enclosing statements
-# as arguments for expressions, and @Expression will have a method "retrieve namespace"
+# as arguments for expressions, and @Expression will have a method "retrieve scope"
 #
 from prototype import runtime
 
-class Namespace:
+class Scope:
 
     INSTANCE = None
 
@@ -39,7 +39,7 @@ class Namespace:
         self.outerScope = outerScope
         self.content = {}
         if self.outerScope == None:
-            self.content.update(Namespace.builtInFunctions)
+            self.content.update(Scope.builtInFunctions)
 
     def get(self, name):
         try:
@@ -56,5 +56,5 @@ class Namespace:
 
 
 
-Namespace.INSTANCE = Namespace(None)
-CurrentNamespace = Namespace.INSTANCE
+Scope.INSTANCE = Scope(None)
+CurrentScope = Scope.INSTANCE

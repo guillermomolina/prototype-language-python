@@ -174,15 +174,15 @@ class Name(Expression):
 
     def eval(self):
         if self.ctx == MemoryContext.Load:
-            return self.getNamespace().get(name=self.id)
+            return self.getScope().get(name=self.id)
         elif self.ctx == MemoryContext.Store:
             return self.id
         else:
             raise NotImplementedError()
 
-    def getNamespace(self):
+    def getScope(self):
         # Problem: we're very loosely coupled.
-        return runtime.Memory.CurrentNamespace
+        return runtime.Memory.CurrentScope
 
 
 """
