@@ -8,9 +8,15 @@
 #
 from prototype import runtime
 
+def createObject(prototype):
+    return {
+        'prototype': prototype
+    }
+
+
 class Scope:
 
-    INSTANCE = None
+    GLOBAL = None
 
     builtInFunctions = {
         'print' : print,
@@ -32,14 +38,24 @@ class Scope:
         'min'   : min,
         'sum'   : sum,
         'open'  : open,
-        'reversed' : reversed,
+        'reversed' : reversed
     }
 
     def __init__(self, outerScope):
         self.outerScope = outerScope
         self.content = {}
         if self.outerScope == None:
-            self.content.update(Scope.builtInFunctions)
+           self.init_globals() 
+
+    def init_globals(self):
+        self.content.update(Scope.builtInFunctions)
+        Object = createObject(None)
+        Object.update({
+            'print': print,
+            'len': len
+        })
+        self.content['Object'] = Object
+
 
     def get(self, name):
         try:
@@ -56,5 +72,5 @@ class Scope:
 
 
 
-Scope.INSTANCE = Scope(None)
-CurrentScope = Scope.INSTANCE
+Scope.GLOBAL = Scope(None)
+CurrentScope = Scope.GLOBAL

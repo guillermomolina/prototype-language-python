@@ -1,3 +1,5 @@
+print(Object)
+
 a = {
     "b": 1,
     "c": {
@@ -8,4 +10,4 @@ a = {
     }
 }
 
-print(a.b + a.c.d[1])
+print(a)

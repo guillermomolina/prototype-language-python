@@ -1,3 +1,4 @@
+from prototype.ast.builder.ExprVisitor import getParameters
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 
@@ -115,24 +116,10 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
     def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
         name = ctx.identifier().getText()
+        params = getParameters(ctx.formalParameterList())
         body = self.visit(ctx.functionBody())
-
-        param_ctx = ctx.formalParameterList()
-        params = []
-
-        if param_ctx != None:
-            for param_arg in param_ctx.formalParameterArg():
-                if param_arg.singleExpression() is not None:
-                    raise NotImplementedError()
-                if param_arg.assignable().identifier() is None:
-                    raise NotImplementedError()
-                else:
-                    params.append(param_arg.assignable().identifier().getText())
-            if param_ctx.lastFormalParameterArg() is not None:
-                raise NotImplementedError()
-
         return ast.stmt.FunctionDef(name=name, args=params, body=body)
-    
+
     def visitFunctionBody(self, ctx:PrototypeParser.FunctionBodyContext):
         statements = []
 

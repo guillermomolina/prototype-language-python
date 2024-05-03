@@ -5,6 +5,22 @@ from prototype import ast
 from prototype.ast.base import MemoryContext
 
 
+def getParameters(param_ctx:PrototypeParser.FormalParameterArgContext):
+    params = []
+
+    if param_ctx != None:
+        for param_arg in param_ctx.formalParameterArg():
+            if param_arg.singleExpression() is not None:
+                raise NotImplementedError()
+            if param_arg.assignable().identifier() is None:
+                raise NotImplementedError()
+            else:
+                params.append(param_arg.assignable().identifier().getText())
+        if param_ctx.lastFormalParameterArg() is not None:
+            raise NotImplementedError()
+
+    return params
+
 class ExprVisitorMixin(PrototypeParserVisitor):
 
     #
@@ -121,6 +137,15 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
         return ast.stmt.AugAssignStmt(name=name, value=value, op=op)
 
+    def visitAnonymousFunctionDecl(self, ctx:PrototypeParser.AnonymousFunctionDeclContext):
+        params = getParameters(ctx.formalParameterList())
+        body = self.visit(ctx.functionBody())
+        return ast.expr.AnonymousFunctionDef(args=params, body=body)
+
+    def visitArrowFunction(self, ctx:PrototypeParser.ArrowFunctionContext):
+        raise NotImplementedError()
+    
+
     #
     # NameNode access: Identifier, ArgumentsExpression, SubName
     #
@@ -195,7 +220,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #     if ctx.dictorsetmaker() != None:
     #         return self.visit(ctx.dictorsetmaker())
 
-    #     return ast.expr.DictContainerNode({})
+    #     return ast.expr.ObjectContainerNode({})
 
     # def visitSetmaker(self, ctx:PrototypeParser.SetmakerContext):
     #     result = set({})
@@ -207,7 +232,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #     if ctx.test(0) != None:
     #         left = self.visit(ctx.test(0))
     #         right = self.visit(ctx.test(1))
-    #         return ast.expr.DictContainerNode({left : right})
+    #         return ast.expr.ObjectContainerNode({left : right})
 
     #     if ctx.dictormaker(0) != None:
     #         left = self.visit(ctx.dictormaker(0))
@@ -216,13 +241,13 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #         result = left.copy()
     #         result.update(right)
 
-    #         if type(result) is not ast.expr.DictContainerNode:
-    #             return ast.expr.DictContainerNode(result)
+    #         if type(result) is not ast.expr.ObjectContainerNode:
+    #             return ast.expr.ObjectContainerNode(result)
     #         else:
     #             return result
 
     def visitObjectLiteral(self, ctx:PrototypeParser.ObjectLiteralContext):
-        result = ast.expr.DictContainerNode({})
+        result = ast.expr.ObjectContainerNode({})
 
         for propertyAssignment in ctx.propertyAssignment():
             right = self.visit(propertyAssignment)
@@ -234,7 +259,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     def visitPropertyExpressionAssignment(self, ctx:PrototypeParser.PropertyExpressionAssignmentContext):
         left = self.visit(ctx.propertyName())
         right = self.visit(ctx.singleExpression())
-        return ast.expr.DictContainerNode({left : right})
+        return ast.expr.ObjectContainerNode({left : right})
 
     def visitPropertyName(self, ctx:PrototypeParser.PropertyNameContext):
         if ctx.StringLiteral() is not None:

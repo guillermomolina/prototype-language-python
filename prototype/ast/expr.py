@@ -1,8 +1,68 @@
 from enum import Enum
 import operator
 
-from prototype.ast.base import ExpressionNode, MemoryContext
+from prototype.ast.base import ExpressionNode, MemoryContext, ControlFlowMark
 from prototype import runtime
+
+
+
+"""
+# Anonymous function definition.
+#   @args - list of arguments (just names)
+#   @body - list of statements, which form functions body
+#
+# Every function has name which is written to the outer scope.
+# For the top-level function definitions, the outer scope is the global scope.
+# For nested functions its the scope of the outer function.
+#
+# Our way to implement name scoping is to set current scope during the evaluation of ANY *STATEMENT*
+# Actually, we'll need to set the new (and then back the old one) when evaluating only functions,
+# as there are no scoping rules for other statements; thus, @NameNode expression will need to check
+# only single global variable - current scope, and function calls will switch scopes.
+#
+# This solution is far from perfect. However, it just works as there is no need for modules.
+# Implementing modules will require providing each @NameNode node an ability to get a proper scope.
+"""
+class AnonymousFunctionDef(ExpressionNode):
+    def __init__(self, args:list, body:list):
+        super().__init__()
+        self.args = args
+        self.body = body
+
+    def getScope(self) -> runtime.memory.Scope:
+        return runtime.memory.CurrentScope
+
+    def eval(self) -> None:
+
+        declarationScope = self.getScope()
+
+        def container(*args):
+            scope = runtime.memory.Scope(outerScope=declarationScope)
+            previousScope = runtime.memory.CurrentScope
+            runtime.memory.CurrentScope = scope
+
+            if len(args) != len(self.args):
+                message = "function() takes %d positional arguments but %d were given" % \
+                          (len(self.args), len(args))
+                raise runtime.Errors.TypeError(message)
+
+            for pair in zip (self.args, args):
+                scope.set(name=pair[0], value=pair[1])
+
+            returnValue = None
+
+            for stmt in self.body:
+                res = stmt.eval()
+                if isinstance(res, ControlFlowMark):
+                    if res.type == ControlFlowMark.Type.Return:
+                        if res.toEval != None:
+                            returnValue = res.toEval.eval()
+                        break
+
+            runtime.memory.CurrentScope = previousScope
+            return returnValue
+
+        return container
 
 
 """
@@ -182,7 +242,7 @@ class NameNode(ExpressionNode):
 
     def getScope(self):
         # Problem: we're very loosely coupled.
-        return runtime.Memory.CurrentScope
+        return runtime.memory.CurrentScope
 
 
 """
@@ -265,19 +325,21 @@ class TupleContainerNode(CollectionContainerNode):
     def __mul__(self, other):
         return TupleContainerNode(self.value.__mul__(other))
 
-class DictContainerNode(CollectionContainerNode):
+class ObjectContainerNode(CollectionContainerNode):
     def __init__(self, value:dict):
         super().__init__(value)
 
     def copy(self):
-        return DictContainerNode(self.value.copy())
+        return ObjectContainerNode(self.value.copy())
 
     def update(self, right):
         self.value.update(right.value)
-        # return DictContainerNode(self.value.update(right.value))
+        # return ObjectContainerNode(self.value.update(right.value))
 
     def eval(self):
-        result = {}
+        result = {
+            'prototype': runtime.memory.Scope.GLOBAL.get('Object')
+        }
 
         for key in self.value.keys():
             newKey = key.eval()

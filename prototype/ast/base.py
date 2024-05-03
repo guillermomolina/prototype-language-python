@@ -58,3 +58,16 @@ class MemoryContext(Enum):
     Load = 1
     Store = 2
     Del = 3
+
+
+class ControlFlowMark:
+
+    class Type(Enum):
+        Return   = 1
+        Break    = 2
+        Continue = 3
+        Pass     = 4
+
+    def __init__(self, type, toEval=None):
+        self.type = type
+        self.toEval = toEval

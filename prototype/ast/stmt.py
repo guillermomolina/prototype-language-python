@@ -1,6 +1,5 @@
 import copy
-from enum import Enum
-from prototype.ast.base import StatementNode, ExpressionNode, MemoryContext
+from prototype.ast.base import StatementNode, ExpressionNode, MemoryContext, ControlFlowMark
 from prototype.ast.expr import AddOpNode, SubOpNode, MultOpNode, DivOpNode, ModOpNode, LShiftOpNode, RShiftOpNode, BinOpNode, UnaryOpNode, CompareNode
 from prototype.ast.expr import BitAndOpNode, BitOrOpNode, BitXorOpNode, NameNode, CallExprNode
 
@@ -32,17 +31,17 @@ class FunctionDef(StatementNode):
         self.args = args
         self.body = body
 
-    def getScope(self) -> runtime.Memory.Scope:
-        return runtime.Memory.CurrentScope
+    def getScope(self) -> runtime.memory.Scope:
+        return runtime.memory.CurrentScope
 
     def eval(self) -> None:
 
         declarationScope = self.getScope()
 
         def container(*args):
-            scope = runtime.Memory.Scope(outerScope=declarationScope)
-            previousScope = runtime.Memory.CurrentScope
-            runtime.Memory.CurrentScope = scope
+            scope = runtime.memory.Scope(outerScope=declarationScope)
+            previousScope = runtime.memory.CurrentScope
+            runtime.memory.CurrentScope = scope
 
             if len(args) != len(self.args):
                 message = "%s() takes %d positional arguments but %d were given" % \
@@ -62,7 +61,7 @@ class FunctionDef(StatementNode):
                             returnValue = res.toEval.eval()
                         break
 
-            runtime.Memory.CurrentScope = previousScope
+            runtime.memory.CurrentScope = previousScope
             return returnValue
 
         # Finally, write the function container to the memory.
@@ -173,11 +172,11 @@ class ForInStmt(StatementNode):
         result = []
 
         # Check if target name exists. If no - create it.
-        #runtime.Memory.CurrentScope.get(self)
+        #runtime.memory.CurrentScope.get(self)
 
         for x in self.iter.eval():
             # Set target to the current value
-            runtime.Memory.CurrentScope.set(self.target.id, x)
+            runtime.memory.CurrentScope.set(self.target.id, x)
 
             shouldBreak = False
             for stmt in self.body:
@@ -231,7 +230,7 @@ class AssignStmt(StatementNode):
             lValue.collection[lValue.index] = rValue
             return
 
-        runtime.Memory.CurrentScope.set(name=lValue, value=rValue)
+        runtime.memory.CurrentScope.set(name=lValue, value=rValue)
 
 class AugAssignStmt(AssignStmt):
     opTable = {
@@ -413,19 +412,6 @@ class ContinueStmtNode(ControlFlowStmtNode):
 class BreakStmtNode(ControlFlowStmtNode):
     def eval(self):
         return ControlFlowMark(ControlFlowMark.Type.Break)
-
-
-class ControlFlowMark:
-
-    class Type(Enum):
-        Return   = 1
-        Break    = 2
-        Continue = 3
-        Pass     = 4
-
-    def __init__(self, type, toEval=None):
-        self.type = type
-        self.toEval = toEval
 
 
 
