@@ -1,9 +1,3 @@
-#
-# Some useful stuff here:
-# http://greentreesnakes.readthedocs.org/en/latest/index.html
-# https://docs.python.org/3/reference/expressions.html#calls
-# https://docs.python.org/3/reference/executionmodel.html#naming
-#
 from enum import Enum
 
 
@@ -26,7 +20,7 @@ class Module(Node):
             stmt.eval()
 
 
-class Interactive(Node):
+class InteractiveNode(Node):
     def __init__(self, body:list):
         super().__init__()
         self.body = body
@@ -38,7 +32,7 @@ class Interactive(Node):
             return [stmt.eval() for stmt in self.body]
 
 
-class EvalExpression(Node):
+class EvalExpressionNode(Node):
     def __init__(self, body):
         super().__init__()
         self.body = body
@@ -49,12 +43,12 @@ class EvalExpression(Node):
 
 """ Base node types """
 
-class Expression(Node):
+class ExpressionNode(Node):
     def __init__(self):
         super().__init__()
 
 
-class Statement(Node):
+class StatementNode(Node):
     def __init__(self):
         super().__init__()
 

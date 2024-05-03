@@ -1,32 +1,32 @@
 from enum import Enum
 import operator
 
-from prototype.ast.base import Expression, MemoryContext
+from prototype.ast.base import ExpressionNode, MemoryContext
 from prototype import runtime
 
 
 """
 # Binary arithmetic, bitwise and logic operations
 """
-class BinOp(Expression):
-    def __init__(self, left:Expression, right:Expression):
+class BinOpNode(ExpressionNode):
+    def __init__(self, left:ExpressionNode, right:ExpressionNode):
         super().__init__()
         self.left = left
         self.right = right
 
-class AddOp(BinOp):
+class AddOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() + self.right.eval()
 
-class SubOp(BinOp):
+class SubOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() - self.right.eval()
 
-class MultOp(BinOp):
+class MultOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() * self.right.eval()
 
-class DivOp(BinOp):
+class DivOpNode(BinOpNode):
     def eval(self):
         left  = self.left.eval()
         right = self.right.eval()
@@ -36,7 +36,7 @@ class DivOp(BinOp):
 
         return left / right
 
-class ModOp(BinOp):
+class ModOpNode(BinOpNode):
     def eval(self):
         left  = self.left.eval()
         right = self.right.eval()
@@ -46,23 +46,23 @@ class ModOp(BinOp):
 
         return left % right
 
-class LshiftOp(BinOp):
+class LShiftOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() << self.right.eval()
 
-class RshiftOp(BinOp):
+class RShiftOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() >> self.right.eval()
 
-class BitAndOp(BinOp):
+class BitAndOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() & self.right.eval()
 
-class BitXorOp(BinOp):
+class BitXorOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() ^ self.right.eval()
 
-class BitOrOp(BinOp):
+class BitOrOpNode(BinOpNode):
     def eval(self):
         return self.left.eval() | self.right.eval()
 
@@ -70,8 +70,8 @@ class BitOrOp(BinOp):
 """
 # Unary arithmetic operations
 """
-class UnaryOp(Expression):
-    def __init__(self, op, operand:Expression):
+class UnaryOpNode(ExpressionNode):
+    def __init__(self, op, operand:ExpressionNode):
         super().__init__()
         self.op = op
         self.operand = operand
@@ -88,7 +88,7 @@ class UnaryOp(Expression):
 """
 # Base class for comparisons.
 """
-class Compare(Expression):
+class CompareNode(ExpressionNode):
 
     class Op(Enum):
         AND = 1
@@ -117,7 +117,7 @@ class Compare(Expression):
         super().__init__()
         self.op = op
 
-class BinaryComp(Compare):
+class BinaryCompNode(CompareNode):
     def __init__(self, left, right, op):
         super().__init__(op=op)
         self.left = left
@@ -127,27 +127,27 @@ class BinaryComp(Compare):
         left = self.left.eval()
         right = self.right.eval()
 
-        if self.op == Compare.Op.IN:
+        if self.op == CompareNode.Op.IN:
             return left in right
-        elif self.op == Compare.Op.NOT_IN:
+        elif self.op == CompareNode.Op.NOT_IN:
             return left not in right
 
-        return Compare.opTable[self.op](left, right)
+        return CompareNode.opTable[self.op](left, right)
 
-class UnaryComp(Compare):
+class UnaryCompNode(CompareNode):
     def __init__(self, operand, op):
         super().__init__(op=op)
         self.operand = operand
 
     def eval(self):
         operand = self.operand.eval()
-        return Compare.opTable[self.op](operand)
+        return CompareNode.opTable[self.op](operand)
 
 
 """
 # Represents None, False and True literals.
 """
-class NameConstant(Expression):
+class NameConstantNode(ExpressionNode):
     nameTable = { 'null' : None, 'true': True, 'false': False }
 
     def __init__(self, name):
@@ -156,7 +156,7 @@ class NameConstant(Expression):
 
     def eval(self):
         try:
-            return NameConstant.nameTable[self.name]
+            return NameConstantNode.nameTable[self.name]
         except KeyError:
             raise ValueError("Wrong name constant")
 
@@ -165,7 +165,7 @@ class NameConstant(Expression):
 #     @id holds the name as a string
 #     @ctx is one of the following types: @Load / @Store / @Del
 """
-class Name(Expression):
+class NameNode(ExpressionNode):
 
     def __init__(self, id, ctx:MemoryContext):
         super().__init__()
@@ -187,10 +187,10 @@ class Name(Expression):
 
 """
 # Function call
-#     @param func is the function, which will often be a Name object.
+#     @param func is the function, which will often be a NameNode object.
 #     @args holds a list of the arguments passed by position.
 """
-class CallExpr(Expression):
+class CallExprNode(ExpressionNode):
     def __init__(self, func, args):
         super().__init__()
         self.func = func   # name
@@ -208,7 +208,7 @@ class CallExpr(Expression):
 #
 # This class delegates common collection methods  to the contained value.
 """
-class CollectionContainer(Expression):
+class CollectionContainerNode(ExpressionNode):
     def __init__(self, value):
         super().__init__()
         self.value = value
@@ -229,52 +229,52 @@ class CollectionContainer(Expression):
         return self.value.__len__()
 
 
-class ListContainer(CollectionContainer):
+class ListContainerNode(CollectionContainerNode):
     def __init__(self, value:list):
         super().__init__(value)
 
     def eval(self):
-        return ListContainer([value.eval() for value in self.value])
+        return ListContainerNode([value.eval() for value in self.value])
 
     def __add__(self, other):
-        if type(other) is not ListContainer:
+        if type(other) is not ListContainerNode:
             msg = 'can only concatenate list to list'
             raise runtime.Errors.TypeError(msg)
-        return ListContainer(self.value + other.value)
+        return ListContainerNode(self.value + other.value)
 
     def __mul__(self, other):
-        return ListContainer(self.value.__mul__(other))
+        return ListContainerNode(self.value.__mul__(other))
 
     def append(self, what):
         return self.value.append(what)
 
 
-class TupleContainer(CollectionContainer):
+class TupleContainerNode(CollectionContainerNode):
     def __init__(self, value):
         super().__init__(value)
 
     def eval(self):
-        return TupleContainer(tuple(value.eval() for value in self.value))
+        return TupleContainerNode(tuple(value.eval() for value in self.value))
 
     def __add__(self, other):
-        if type(other) is not TupleContainer:
+        if type(other) is not TupleContainerNode:
             msg = 'can only concatenate tuple to tuple'
             raise runtime.Errors.TypeError(msg)
-        return TupleContainer(self.value + other.value)
+        return TupleContainerNode(self.value + other.value)
 
     def __mul__(self, other):
-        return TupleContainer(self.value.__mul__(other))
+        return TupleContainerNode(self.value.__mul__(other))
 
-class DictContainer(CollectionContainer):
+class DictContainerNode(CollectionContainerNode):
     def __init__(self, value:dict):
         super().__init__(value)
 
     def copy(self):
-        return DictContainer(self.value.copy())
+        return DictContainerNode(self.value.copy())
 
     def update(self, right):
         self.value.update(right.value)
-        # return DictContainer(self.value.update(right.value))
+        # return DictContainerNode(self.value.update(right.value))
 
     def eval(self):
         result = {}
@@ -287,7 +287,7 @@ class DictContainer(CollectionContainer):
         return result
 
 
-class SetContainer(CollectionContainer):
+class SetContainerNode(CollectionContainerNode):
     def __init__(self, value:set):
         super().__init__(value)
 
@@ -295,15 +295,15 @@ class SetContainer(CollectionContainer):
         result = set({})
         for item in self.value:
             result.add(item.eval())
-        return SetContainer(result)
+        return SetContainerNode(result)
 
     def update(self, right):
-        SetContainer(self.value.update(right))
+        SetContainerNode(self.value.update(right))
 
 """
 # Number literal
 """
-class Num(Expression):
+class NumberNode(ExpressionNode):
 
     def __init__(self, value):
         super().__init__()
@@ -315,7 +315,7 @@ class Num(Expression):
 """
 # String literal
 """
-class Str(Expression):
+class StringNode(ExpressionNode):
     def __init__(self, value):
         super().__init__()
         self.value = value

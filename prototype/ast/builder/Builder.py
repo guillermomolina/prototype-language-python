@@ -55,10 +55,10 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # #
     # def visitSingle_input(self, ctx:PrototypeParser.Single_inputContext):
     #     if ctx.compound_stmt() != None:
-    #         return base.Interactive(self.visit(ctx.compound_stmt()))
+    #         return base.InteractiveNode(self.visit(ctx.compound_stmt()))
 
     #     elif ctx.simple_stmt() != None:
-    #         return base.Interactive(self.visit(ctx.simple_stmt()))
+    #         return base.InteractiveNode(self.visit(ctx.simple_stmt()))
 
     #     return None
 
@@ -66,6 +66,6 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # # Visit single expression (call to the eval() function)
     # #
     # def visitEval_input(self, ctx:PrototypeParser.Eval_inputContext):
-    #     return base.EvalExpression(self.visit(ctx.test()))
+    #     return base.EvalExpressionNode(self.visit(ctx.test()))
 
 

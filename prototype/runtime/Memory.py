@@ -1,10 +1,10 @@
 
 
 #
-# Looks like we have to pass scope instance to every @Name node;
+# Looks like we have to pass scope instance to every @NameNode node;
 # Alternatively, we can make every node being able to retreive scope by its own.
 # How? Probably, enclosing statement should provide such API, so we'll pass enclosing statements
-# as arguments for expressions, and @Expression will have a method "retrieve scope"
+# as arguments for expressions, and @ExpressionNode will have a method "retrieve scope"
 #
 from prototype import runtime
 

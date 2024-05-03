@@ -161,10 +161,10 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         if ctx.expressionSequence() != None:
             expressionSequence = self.visit(ctx.expressionSequence())
 
-        return ast.stmt.ReturnStmt(expr=expressionSequence)
+        return ast.stmt.ReturnStmtNode(expr=expressionSequence)
 
     # def visitPass_stmt(self, ctx:PrototypeParser.Pass_stmtContext):
-    #     return ast.stmt.PassStmt()
+    #     return ast.stmt.PassStmtNode()
 
     # def visitBreak_stmt(self, ctx:PrototypeParser.Break_stmtContext):
     #     validParents = PrototypeParser.For_stmtContext, PrototypeParser.While_stmtContext
@@ -172,7 +172,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     #     if not self.validContextParents(ctx, validParents):
     #         raise runtime.Errors.SyntaxError("'break' outside loop")
 
-    #     return ast.stmt.BreakStmt()
+    #     return ast.stmt.BreakStmtNode()
 
     # def visitContinue_stmt(self, ctx:PrototypeParser.Continue_stmtContext):
     #     validParents = PrototypeParser.For_stmtContext, PrototypeParser.While_stmtContext
@@ -180,7 +180,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     #     if not self.validContextParents(ctx, validParents):
     #         raise runtime.Errors.SyntaxError("'continue' outside loop")
 
-    #     return ast.stmt.ContinueStmt()
+    #     return ast.stmt.ContinueStmtNode()
 
     #
     # Check whether context has one of the specified proper parents

@@ -17,19 +17,19 @@ from prototype.shell.shell import InteractiveShell
 class InputType(Enum):
     File = 1
     SingleInput = 2
-    Expression = 3
+    ExpressionNode = 3
 
 
 parserRuleFor = {
     InputType.File        : PrototypeParser.program,
     InputType.SingleInput : PrototypeParser.program,
-    InputType.Expression  : PrototypeParser.program,
+    InputType.ExpressionNode  : PrototypeParser.program,
 }
 
 visitorRuleFor = {
     InputType.File        : CustomVisitor.visitProgram,
     InputType.SingleInput : CustomVisitor.visitProgram,
-    InputType.Expression  : CustomVisitor.visitProgram,
+    InputType.ExpressionNode  : CustomVisitor.visitProgram,
 }
 
 
@@ -41,7 +41,7 @@ class EvalArguments:
         self.print_timings = print_timings
 
 
-def prototype_eval(sourcecode:str, firstRule=InputType.Expression, args=None):
+def prototype_eval(sourcecode:str, firstRule=InputType.ExpressionNode, args=None):
     if args == None:
         args = EvalArguments()
 
@@ -117,7 +117,7 @@ def prototype_eval(sourcecode:str, firstRule=InputType.Expression, args=None):
         for timing in timings:
             print((timing[0]+": %.3f ms") % (timing[1]*1000))
 
-    if firstRule == InputType.Expression:
+    if firstRule == InputType.ExpressionNode:
         return evalResult
 
     return 0
