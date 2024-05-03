@@ -46,7 +46,7 @@ class CustomLexer(PrototypeLexer):
         self._token = token
         self.tokens.append(token)
         self.lastToken = token
-        # import AST; print("%s at [%d, %d]" % (AST.nameFor(token.type), token.line, token.column))
+        # import ast; print("%s at [%d, %d]" % (ast.nameFor(token.type), token.line, token.column))
         # super().emitToken(token)
 
     def nextToken(self):

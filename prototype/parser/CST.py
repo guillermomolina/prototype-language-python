@@ -47,16 +47,16 @@ class CstFlattened:
             ruleNume = tree.__class__.__name__.replace('Context', '')
             return ruleNume
 
-    # Fills this AST based on the parse tree.
+    # Fills this Node based on the parse tree.
     def walk(self, tree:ParseTree, ast):
         if tree.getChildCount() == 0:
-            # We've reached a leaf. We must create a new instance of an AST because
+            # We've reached a leaf. We must create a new instance of an Node because
             # the constructor will make sure this new instance is added to its parent's
             # child nodes.
             CstFlattened(ast, tree)
         elif tree.getChildCount() == 1:
             # We've reached an inner node with a single child: we don't include this in
-            # our AST.
+            # our ast.
             self.walk(tree.getChild(0), ast)
         elif tree.getChildCount() > 1:
             for child in tree.getChildren():

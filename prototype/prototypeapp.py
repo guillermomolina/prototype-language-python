@@ -6,7 +6,7 @@ import antlr4
 from antlr4.tree.Trees import Trees
 
 from prototype.version import __version__
-from prototype.AST.builder.Builder import CustomVisitor
+from prototype.ast.builder.Builder import CustomVisitor
 from prototype.parser.CST import CstFlattened, CstFiltered
 from prototype.parser.Errors import CustomErrorStrategy, CustomErrorListener
 from prototype.parser.CustomLexer import CustomLexer
@@ -79,7 +79,7 @@ def prototype_eval(sourcecode:str, firstRule=InputType.Expression, args=None):
         cst = CstFiltered(tree=parse_tree)
         print(cst)
 
-    # Build an AST
+    # Build an Node
     astBuildTime = time.time()
 
     visitor = CustomVisitor()
@@ -93,7 +93,7 @@ def prototype_eval(sourcecode:str, firstRule=InputType.Expression, args=None):
     if args.parse_only:
         return 0
 
-    # Evaluate the AST we've built
+    # Evaluate the Node we've built
     evalTime = time.time()
     try:
         evalResult = ast.eval()
@@ -108,7 +108,7 @@ def prototype_eval(sourcecode:str, firstRule=InputType.Expression, args=None):
     if args.print_timings:
         timings = [
             ('Parsing',         parseTime),
-            ('Building an AST', astBuildTime),
+            ('Building an Node', astBuildTime),
             ('Evaluating',      evalTime),
             ('Total time',      totalTime),
             ('Etc', totalTime-parseTime-astBuildTime-evalTime)
@@ -136,7 +136,7 @@ def main():
     argParser.add_argument('--parse', dest='parse_only', action='store_true',
                            help='Parse input without evaluating it.')
     argParser.add_argument('--timings', dest='print_timings', action='store_true',
-                           help='Print time spend during parsing, building an AST and evaluating.')
+                           help='Print time spend during parsing, building an Node and evaluating.')
     argParser.add_argument('-q', dest='ignore_greeting', action='store_true',
                            help="Don't print version and copyright messages on interactive startup")
     argParser.add_argument('-i', dest='force_promt', action='store_true',

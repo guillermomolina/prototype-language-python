@@ -1,7 +1,7 @@
 from enum import Enum
 import operator
 
-from prototype.AST.ast import Expression, MemoryContext
+from prototype.ast.base import Expression, MemoryContext
 from prototype import runtime
 
 

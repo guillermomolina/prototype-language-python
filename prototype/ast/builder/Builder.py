@@ -1,10 +1,10 @@
-from prototype.AST.builder.ExprVisitor import ExprVisitorMixin
-from prototype.AST.builder.StmtVisitor import StmtVisitorMixin
+from prototype.ast.builder.ExprVisitor import ExprVisitorMixin
+from prototype.ast.builder.StmtVisitor import StmtVisitorMixin
 
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 
-from prototype.AST import ast
+from prototype.ast import base
 
 class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     def visitChildren(self, node):
@@ -18,7 +18,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
             childResult = c.accept(self)
             result = self.aggregateResult(result, childResult)
 
-        if not isinstance(result, (ast.AST, list)):
+        if not isinstance(result, (base.Node, list)):
             raise NotImplementedError()
         return result
 
@@ -31,7 +31,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
         if ctx.sourceElements() != None:
             statements = self.visit(ctx.sourceElements())
 
-        return ast.Module(body=statements)
+        return base.Module(body=statements)
 
     # #
     # # Visit parse tree produced from a file
@@ -47,7 +47,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     #             else:
     #                 statements.append(statement)
 
-    #     return ast.Module(body=statements)
+    #     return base.Module(body=statements)
 
 
     # #
@@ -55,10 +55,10 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # #
     # def visitSingle_input(self, ctx:PrototypeParser.Single_inputContext):
     #     if ctx.compound_stmt() != None:
-    #         return ast.Interactive(self.visit(ctx.compound_stmt()))
+    #         return base.Interactive(self.visit(ctx.compound_stmt()))
 
     #     elif ctx.simple_stmt() != None:
-    #         return ast.Interactive(self.visit(ctx.simple_stmt()))
+    #         return base.Interactive(self.visit(ctx.simple_stmt()))
 
     #     return None
 
@@ -66,6 +66,6 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # # Visit single expression (call to the eval() function)
     # #
     # def visitEval_input(self, ctx:PrototypeParser.Eval_inputContext):
-    #     return ast.EvalExpression(self.visit(ctx.test()))
+    #     return base.EvalExpression(self.visit(ctx.test()))
 
 

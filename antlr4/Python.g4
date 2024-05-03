@@ -139,7 +139,7 @@ continue_stmt: CONTINUE;
  * Common stuff: comparisons, arithmetic and logic expressions
  *
  * Rules "tests" and "expr" from the official grammar were re-written in order
- * to make AST construction easier; ANTLR handles left recursion for us
+ * to make Node construction easier; ANTLR handles left recursion for us
  *
  */
 

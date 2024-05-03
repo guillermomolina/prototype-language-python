@@ -7,15 +7,15 @@
 from enum import Enum
 
 
-class AST(object):
+class Node:
     def eval(self):
         raise NotImplementedError()
 
 
 """ Input types """
 
-class Module(AST):
-    def __init__(self, body:[]):
+class Module(Node):
+    def __init__(self, body:list):
         super().__init__()
         self.body = body
 
@@ -26,8 +26,8 @@ class Module(AST):
             stmt.eval()
 
 
-class Interactive(AST):
-    def __init__(self, body:[]):
+class Interactive(Node):
+    def __init__(self, body:list):
         super().__init__()
         self.body = body
 
@@ -38,7 +38,7 @@ class Interactive(AST):
             return [stmt.eval() for stmt in self.body]
 
 
-class EvalExpression(AST):
+class EvalExpression(Node):
     def __init__(self, body):
         super().__init__()
         self.body = body
@@ -49,12 +49,12 @@ class EvalExpression(AST):
 
 """ Base node types """
 
-class Expression(AST):
+class Expression(Node):
     def __init__(self):
         super().__init__()
 
 
-class Statement(AST):
+class Statement(Node):
     def __init__(self):
         super().__init__()
 

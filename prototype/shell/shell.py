@@ -3,8 +3,8 @@ import sys
 import antlr4
 from antlr4.tree.Trees import Trees
 
-from prototype.AST.builder.Builder import CustomVisitor
-from prototype.AST.stmt import ControlFlowMark
+from prototype.ast.builder.Builder import CustomVisitor
+from prototype.ast.stmt import ControlFlowMark
 from prototype.parser.CustomLexer import CustomLexer
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.parser.Errors import CustomErrorStrategy, CustomErrorListener, BufferedErrorListener

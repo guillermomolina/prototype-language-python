@@ -1,7 +1,7 @@
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 
-from prototype import AST
+from prototype import ast
 from prototype import runtime
 
 
@@ -82,13 +82,13 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         if ctx.Else() is not None:
             orelse = self.visit(ctx.statement(1))
 
-        return AST.stmt.IfStmt(test=test, body=suite, orelse=orelse)
+        return ast.stmt.IfStmt(test=test, body=suite, orelse=orelse)
 
     def visitWhileStatement(self, ctx:PrototypeParser.WhileStatementContext):
         test = self.visit(ctx.expressionSequence())
         suite = self.visit(ctx.statement())
 
-        return AST.stmt.WhileStmt(test=test, body=suite, orelse=[])
+        return ast.stmt.WhileStmt(test=test, body=suite, orelse=[])
 
     def visitForInStatement(self, ctx:PrototypeParser.ForInStatementContext):
         if ctx.singleExpression() is not None:
@@ -98,7 +98,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         test = self.visit(ctx.expressionSequence())
         suite = self.visit(ctx.statement())
 
-        return AST.stmt.ForInStmt(target=expr, iter=test, body=suite)
+        return ast.stmt.ForInStmt(target=expr, iter=test, body=suite)
 
     def visitForStatement(self, ctx:PrototypeParser.ForStatementContext):
         raise NotImplementedError()
@@ -111,7 +111,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         # test = self.visit(ctx.expressionSequence())
         # suite = self.visit(ctx.statement())
 
-        # return AST.stmt.ForStmt(target=expr, iter=test, body=suite)
+        # return ast.stmt.ForStmt(target=expr, iter=test, body=suite)
 
     def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
         name = ctx.identifier().getText()
@@ -131,7 +131,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
             if param_ctx.lastFormalParameterArg() is not None:
                 raise NotImplementedError()
 
-        return AST.stmt.FunctionDef(name=name, args=params, body=body)
+        return ast.stmt.FunctionDef(name=name, args=params, body=body)
     
     def visitFunctionBody(self, ctx:PrototypeParser.FunctionBodyContext):
         statements = []
@@ -161,10 +161,10 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         if ctx.expressionSequence() != None:
             expressionSequence = self.visit(ctx.expressionSequence())
 
-        return AST.stmt.ReturnStmt(expr=expressionSequence)
+        return ast.stmt.ReturnStmt(expr=expressionSequence)
 
     # def visitPass_stmt(self, ctx:PrototypeParser.Pass_stmtContext):
-    #     return AST.stmt.PassStmt()
+    #     return ast.stmt.PassStmt()
 
     # def visitBreak_stmt(self, ctx:PrototypeParser.Break_stmtContext):
     #     validParents = PrototypeParser.For_stmtContext, PrototypeParser.While_stmtContext
@@ -172,7 +172,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     #     if not self.validContextParents(ctx, validParents):
     #         raise runtime.Errors.SyntaxError("'break' outside loop")
 
-    #     return AST.stmt.BreakStmt()
+    #     return ast.stmt.BreakStmt()
 
     # def visitContinue_stmt(self, ctx:PrototypeParser.Continue_stmtContext):
     #     validParents = PrototypeParser.For_stmtContext, PrototypeParser.While_stmtContext
@@ -180,7 +180,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     #     if not self.validContextParents(ctx, validParents):
     #         raise runtime.Errors.SyntaxError("'continue' outside loop")
 
-    #     return AST.stmt.ContinueStmt()
+    #     return ast.stmt.ContinueStmt()
 
     #
     # Check whether context has one of the specified proper parents

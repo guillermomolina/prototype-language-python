@@ -1,10 +1,10 @@
 import copy
 from enum import Enum
-from prototype.AST.ast import Statement, Expression, MemoryContext
-from prototype.AST.expr import AddOp, SubOp, MultOp, DivOp, ModOp, LshiftOp, RshiftOp, BinOp, UnaryOp, Compare
-from prototype.AST.expr import BitAndOp, BitOrOp, BitXorOp, Name, CallExpr
+from prototype.ast.base import Statement, Expression, MemoryContext
+from prototype.ast.expr import AddOp, SubOp, MultOp, DivOp, ModOp, LshiftOp, RshiftOp, BinOp, UnaryOp, Compare
+from prototype.ast.expr import BitAndOp, BitOrOp, BitXorOp, Name, CallExpr
 
-from prototype import AST
+from prototype import ast
 from prototype import runtime
 
 """
@@ -76,13 +76,13 @@ class FunctionDef(Statement):
 #    @test holds a single node, such as a Compare node.
 #    @body and orelse each hold a list of nodes.
 #
-# @elif clauses don’t have a special representation in the AST, but rather
+# @elif clauses don’t have a special representation in the Node, but rather
 # appear as extra If nodes within the orelse section of the previous one.
 #
 # Optional clauses such as @else are stored as an empty list if they’re not present.
 """
 class IfStmt(Statement):
-    def __init__(self, test, body:[], orelse:[]):
+    def __init__(self, test, body:list, orelse:list):
         super().__init__()
         self.test = test
         self.body = body
@@ -115,7 +115,7 @@ class IfStmt(Statement):
 # @orelse is not used as it is not present in grammar.
 """
 class WhileStmt(Statement):
-    def __init__(self, test, body:[], orelse:[]):
+    def __init__(self, test, body:list, orelse:list):
         super().__init__()
         self.test = test
         self.body = body
@@ -221,7 +221,7 @@ class AssignStmt(Statement):
         self.value = value
 
     def eval(self) -> None:
-        if isinstance(self.target, AST.expr.CallExpr):
+        if isinstance(self.target, ast.expr.CallExpr):
             raise runtime.Errors.SyntaxError("can't assign to function call")
 
         lValue = self.target.eval()
