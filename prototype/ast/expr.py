@@ -25,10 +25,11 @@ from prototype.runtime.objects import Array, Function, Object
 # Implementing modules will require providing each @NameNode node an ability to get a proper scope.
 """
 class AnonymousFunctionDef(ExpressionNode):
-    def __init__(self, args:list, body:list):
+    def __init__(self, args:list, body:list, source_code:str):
         super().__init__()
         self.args = args
         self.body = body
+        self.source_code = source_code
 
     def getScope(self) -> runtime.memory.Scope:
         return runtime.memory.CurrentScope
@@ -62,8 +63,8 @@ class AnonymousFunctionDef(ExpressionNode):
 
             runtime.memory.CurrentScope = previousScope
             return returnValue
-
-        return Function(container, self.args)
+        
+        return Function(container, self.args, self.source_code)
 
 
 """

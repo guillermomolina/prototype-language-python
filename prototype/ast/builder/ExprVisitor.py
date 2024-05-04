@@ -139,8 +139,13 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
     def visitAnonymousFunctionDecl(self, ctx:PrototypeParser.AnonymousFunctionDeclContext):
         params = getParameters(ctx.formalParameterList())
-        body = self.visit(ctx.functionBody())
-        return ast.expr.AnonymousFunctionDef(args=params, body=body)
+        body_ctx = ctx.functionBody()
+        body = self.visit(body_ctx)
+        source_code = body_ctx.start.source[1].strdata
+        start_index = body_ctx.start.start + 1
+        end_index = body_ctx.stop.stop
+        source_code = source_code[start_index:end_index]
+        return ast.expr.AnonymousFunctionDef(args=params, body=body, source_code=source_code)
 
     def visitArrowFunction(self, ctx:PrototypeParser.ArrowFunctionContext):
         raise NotImplementedError()
