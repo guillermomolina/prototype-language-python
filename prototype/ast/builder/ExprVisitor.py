@@ -277,7 +277,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         for arrayElement in ctx.elementList().arrayElement():
             elements.append(self.visit(arrayElement))
 
-        return ast.expr.ListContainerNode(elements)
+        return ast.expr.ArrayContainerNode(elements)
 
     # def visitTupleMaker(self, ctx:PrototypeParser.TupleMakerContext):
     #     if ctx.testlist_comp() == None:

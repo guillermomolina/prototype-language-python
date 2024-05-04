@@ -3,6 +3,7 @@ import operator
 
 from prototype.ast.base import ExpressionNode, MemoryContext, ControlFlowMark
 from prototype import runtime
+from prototype.runtime.objects import Array, Function, Object
 
 
 
@@ -62,7 +63,7 @@ class AnonymousFunctionDef(ExpressionNode):
             runtime.memory.CurrentScope = previousScope
             return returnValue
 
-        return container
+        return Function(container, self.args)
 
 
 """
@@ -289,21 +290,22 @@ class CollectionContainerNode(ExpressionNode):
         return self.value.__len__()
 
 
-class ListContainerNode(CollectionContainerNode):
+class ArrayContainerNode(CollectionContainerNode):
     def __init__(self, value:list):
         super().__init__(value)
 
     def eval(self):
-        return ListContainerNode([value.eval() for value in self.value])
+
+        return Array([value.eval() for value in self.value])
 
     def __add__(self, other):
-        if type(other) is not ListContainerNode:
+        if type(other) is not ArrayContainerNode:
             msg = 'can only concatenate list to list'
             raise runtime.Errors.TypeError(msg)
-        return ListContainerNode(self.value + other.value)
+        return ArrayContainerNode(self.value + other.value)
 
     def __mul__(self, other):
-        return ListContainerNode(self.value.__mul__(other))
+        return ArrayContainerNode(self.value.__mul__(other))
 
     def append(self, what):
         return self.value.append(what)
@@ -337,14 +339,12 @@ class ObjectContainerNode(CollectionContainerNode):
         # return ObjectContainerNode(self.value.update(right.value))
 
     def eval(self):
-        result = {
-            'prototype': runtime.memory.Scope.GLOBAL.get('Object')
-        }
+        result = Object()
 
         for key in self.value.keys():
             newKey = key.eval()
             newVal = self.value[key].eval()
-            result[newKey] = newVal
+            result.properties[newKey] = newVal
 
         return result
 

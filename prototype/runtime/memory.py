@@ -7,12 +7,7 @@
 # as arguments for expressions, and @ExpressionNode will have a method "retrieve scope"
 #
 from prototype import runtime
-
-def createObject(prototype):
-    return {
-        'prototype': prototype
-    }
-
+from prototype.runtime.objects import Object, Array, Function
 
 class Scope:
 
@@ -49,13 +44,9 @@ class Scope:
 
     def init_globals(self):
         self.content.update(Scope.builtInFunctions)
-        Object = createObject(None)
-        Object.update({
-            'print': print,
-            'len': len
-        })
-        self.content['Object'] = Object
-
+        self.content['Object'] = Object.PROTOTYPE
+        self.content['Array'] = Array.PROTOTYPE
+        self.content['Function'] = Function.PROTOTYPE
 
     def get(self, name):
         try:
