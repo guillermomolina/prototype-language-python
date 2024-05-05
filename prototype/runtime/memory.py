@@ -45,14 +45,14 @@ class Scope:
 
     def init_globals(self):
         self.content.update(Scope.builtInFunctions)
-        self.content['Object'] = Object.INSTANCE
-        self.content['Array'] = Array.INSTANCE
-        self.content['Function'] = Function.INSTANCE
-        self.content['Prototype'] = Function.INSTANCE
-        self.content['String'] = Prototype.INSTANCE
-        self.content['Number'] = Number.INSTANCE
-        self.content['Boolean'] = Boolean.INSTANCE
-        self.content['Null'] = Null.INSTANCE
+        self.content['Object'] = Object.PROTOTYPE
+        self.content['Array'] = Array.PROTOTYPE
+        self.content['Function'] = Function.PROTOTYPE
+        self.content['Prototype'] = Function.PROTOTYPE
+        self.content['String'] = Prototype.PROTOTYPE
+        self.content['Number'] = Number.PROTOTYPE
+        self.content['Boolean'] = Boolean.PROTOTYPE
+        self.content['Null'] = Null.PROTOTYPE
 
     def get(self, name):
         try:

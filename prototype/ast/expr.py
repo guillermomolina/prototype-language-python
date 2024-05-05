@@ -3,7 +3,7 @@ import operator
 
 from prototype.ast.base import ExpressionNode, MemoryContext, ControlFlowMark
 from prototype import runtime
-from prototype.runtime.objects import Array, Function, Object
+from prototype.runtime.objects import Array, Boolean, Function, Null, Object
 
 
 
@@ -211,9 +211,9 @@ class UnaryCompNode(CompareNode):
 """
 class NameConstantNode(ExpressionNode):
     nameTable = { 
-        'null' : None, 
-        'true': True, 
-        'false': False
+        'null' : Null.INSTANCE, 
+        'true': Boolean.TRUE, 
+        'false': Boolean.FALSE
     }
 
     def __init__(self, name):

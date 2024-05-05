@@ -1,12 +1,12 @@
 class Object:
-    INSTANCE = None
+    PROTOTYPE = None
 
     @classmethod
     def initialize(cls):
         pass
 
     def __init__(self, prototype=None, properties=None):
-        self.prototype = prototype or Object.INSTANCE
+        self.prototype = prototype or Object.PROTOTYPE
         self.properties = properties or {}
 
     def __str__(self):
@@ -20,10 +20,10 @@ class Object:
 
 
 class Function(Object):
-    INSTANCE = None
+    PROTOTYPE = None
 
     def __init__(self, function, arguments=None, source_code=None, prototype=None, properties=None):
-        super().__init__(prototype or Function.INSTANCE, properties)
+        super().__init__(prototype or Function.PROTOTYPE, properties)
         self.function = function
         self.arguments = arguments or []
         self.source_code = source_code
@@ -38,11 +38,11 @@ class Function(Object):
 
 
 class Prototype(Function):
-    INSTANCE = None
+    PROTOTYPE = None
 
     def __init__(self, name, constructor=None, arguments=None, source_code=None, prototype=None, properties=None):
         super().__init__(constructor or self.constructor, arguments, source_code,
-                         prototype or Prototype.INSTANCE, properties)
+                         prototype or Prototype.PROTOTYPE, properties)
         self.name = name
 
     def __str__(self):
@@ -53,10 +53,10 @@ class Prototype(Function):
 
 
 class Array(Object):
-    INSTANCE = None
+    PROTOTYPE = None
 
     def __init__(self, array=None):
-        self.prototype = Array.INSTANCE
+        self.prototype = Array.PROTOTYPE
         self.array = array or []
 
     def __str__(self):
@@ -64,10 +64,10 @@ class Array(Object):
 
 
 class String(Object):
-    INSTANCE = None
+    PROTOTYPE = None
 
     def __init__(self, string=None):
-        self.prototype = String.INSTANCE
+        self.prototype = String.PROTOTYPE
         self.string = string or ""
 
     def __str__(self):
@@ -75,10 +75,10 @@ class String(Object):
 
 
 class Number(Object):
-    INSTANCE = None
+    PROTOTYPE = None
 
     def __init__(self, number=None):
-        self.prototype = Number.INSTANCE
+        self.prototype = Number.PROTOTYPE
         self.number = number or 0
 
     def __str__(self):
@@ -86,10 +86,12 @@ class Number(Object):
 
 
 class Boolean(Object):
-    INSTANCE = None
+    PROTOTYPE = None
+    FALSE = None
+    TRUE = None
 
     def __init__(self, value=None):
-        self.prototype = Boolean.INSTANCE
+        self.prototype = Boolean.PROTOTYPE
         self.value = value or False
 
     def __str__(self):
@@ -97,22 +99,26 @@ class Boolean(Object):
 
 
 class Null(Object):
+    PROTOTYPE = None
     INSTANCE = None
 
-    def __init__(self, null=None):
-        self.prototype = Null.INSTANCE
+    def __init__(self):
+        self.prototype = Null.PROTOTYPE
 
     def __str__(self):
         return 'null'  
 
-Object.INSTANCE = Prototype('Object', Function(Object))
-Function.INSTANCE = Prototype('Function', Function(Function))
-Function.INSTANCE.prototype = Object.INSTANCE
-Array.INSTANCE = Prototype('Array', Function(Array))
-Prototype.INSTANCE = Prototype('Prototype', Function(Prototype))
-String.INSTANCE = Prototype('String', Function(String))
-Number.INSTANCE = Prototype('Number', Function(Number))
-Boolean.INSTANCE = Prototype('Boolean', Function(Boolean))
-Null.INSTANCE = Prototype('Null', Function(Null))
+Object.PROTOTYPE = Prototype('Object', Function(Object))
+Function.PROTOTYPE = Prototype('Function', Function(Function))
+Function.PROTOTYPE.prototype = Object.PROTOTYPE
+Array.PROTOTYPE = Prototype('Array', Function(Array))
+Prototype.PROTOTYPE = Prototype('Prototype', Function(Prototype))
+String.PROTOTYPE = Prototype('String', Function(String))
+Number.PROTOTYPE = Prototype('Number', Function(Number))
+Boolean.PROTOTYPE = Prototype('Boolean', Function(Boolean))
+Boolean.FALSE = Boolean(False)
+Boolean.TRUE = Boolean(True)
+Null.PROTOTYPE = Prototype('Null', Function(Null))
+Null.INSTANCE= Null()
 
-Object.INSTANCE.properties['print'] = Function('print', print)
+Object.PROTOTYPE.properties['print'] = Function('print', print)
