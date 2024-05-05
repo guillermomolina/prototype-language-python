@@ -210,7 +210,11 @@ class UnaryCompNode(CompareNode):
 # Represents None, False and True literals.
 """
 class NameConstantNode(ExpressionNode):
-    nameTable = { 'null' : None, 'true': True, 'false': False }
+    nameTable = { 
+        'null' : None, 
+        'true': True, 
+        'false': False
+    }
 
     def __init__(self, name):
         super().__init__()
@@ -246,6 +250,28 @@ class NameNode(ExpressionNode):
         # Problem: we're very loosely coupled.
         return runtime.memory.CurrentScope
 
+"""
+# A variable name.
+#     @id holds the name as a string
+#     @ctx is one of the following types: @Load / @Store / @Del
+"""
+class ThisExprNode(ExpressionNode):
+
+    def __init__(self):
+        super().__init__()
+
+    def eval(self):
+        raise NotImplementedError()
+        if self.ctx == MemoryContext.Load:
+            return self.getScope().get(name=self.id)
+        elif self.ctx == MemoryContext.Store:
+            return self.id
+        else:
+            raise NotImplementedError()
+
+    def getScope(self):
+        # Problem: we're very loosely coupled.
+        return runtime.memory.CurrentScope
 
 """
 # Function call
@@ -253,15 +279,17 @@ class NameNode(ExpressionNode):
 #     @args holds a list of the arguments passed by position.
 """
 class CallExprNode(ExpressionNode):
-    def __init__(self, func, args):
+    def __init__(self, rcvr, func, args):
         super().__init__()
+        self.rcvr = rcvr
         self.func = func   # name
         self.args = args
 
     def eval(self):
+        rcvr = self.rcvr.eval()
         func = self.func.eval()
         evalArgs = [ arg.eval() for arg in self.args ]
-        return func(*evalArgs)
+        return func(rcvr, *evalArgs)
 
 
 """
