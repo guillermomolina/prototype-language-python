@@ -28,7 +28,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     def visitProgram(self, ctx:PrototypeParser.ProgramContext):
         statements = []
 
-        if ctx.sourceElements() != None:
+        if ctx.sourceElements() is not None:
             statements = self.visit(ctx.sourceElements())
 
         return base.Module(body=statements)
@@ -41,7 +41,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
 
     #     for stmt in ctx.stmt():
     #         statement =  self.visit(stmt)
-    #         if statement != None:
+    #         if statement is not None:
     #             if type(statement) is list:
     #                 statements += statement
     #             else:
@@ -54,10 +54,10 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # # Single input is used both in interpreter mode and with strings passes as a parameter
     # #
     # def visitSingle_input(self, ctx:PrototypeParser.Single_inputContext):
-    #     if ctx.compound_stmt() != None:
+    #     if ctx.compound_stmt() is not None:
     #         return base.InteractiveNode(self.visit(ctx.compound_stmt()))
 
-    #     elif ctx.simple_stmt() != None:
+    #     elif ctx.simple_stmt() is not None:
     #         return base.InteractiveNode(self.visit(ctx.simple_stmt()))
 
     #     return None

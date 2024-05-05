@@ -37,14 +37,16 @@ class Scope:
         'reversed': reversed
     }
 
-    def __init__(self, outerScope):
+    def __init__(self, outerScope, currentObject):
         self.outerScope = outerScope
+        self.currentObject = currentObject
         self.content = {}
-        if self.outerScope == None:
+        if self.outerScope is None:
             self.init_globals()
 
     def init_globals(self):
-        self.content.update(Scope.builtInFunctions)
+        self.currentObject = Object()
+        # self.content.update(Scope.builtInFunctions)
         self.content['Object'] = Object.PROTOTYPE
         self.content['Array'] = Array.PROTOTYPE
         self.content['Function'] = Function.PROTOTYPE
@@ -57,9 +59,15 @@ class Scope:
     def get(self, name):
         try:
             # Search in the current scope first
+            return self.currentObject[name]
+        except runtime.Errors.NameError:
+            pass
+
+        try:
+            # Search in the current scope first
             return self.content[name]
         except KeyError:
-            if self.outerScope != None:
+            if self.outerScope is not None:
                 return self.outerScope.get(name)
 
             raise runtime.Errors.NameError("name %s is not defined" % name)
@@ -68,5 +76,5 @@ class Scope:
         self.content[name] = value
 
 
-Scope.GLOBAL = Scope(None)
+Scope.GLOBAL = Scope(None, None)
 CurrentScope = Scope.GLOBAL

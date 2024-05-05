@@ -35,6 +35,7 @@ class FunctionDef(StatementNode):
         return runtime.memory.CurrentScope
 
     def eval(self) -> None:
+        raise NotImplementedError()
 
         declarationScope = self.getScope()
 
@@ -57,7 +58,7 @@ class FunctionDef(StatementNode):
                 res = stmt.eval()
                 if isinstance(res, ControlFlowMark):
                     if res.type == ControlFlowMark.Type.Return:
-                        if res.toEval != None:
+                        if res.toEval is not None:
                             returnValue = res.toEval.eval()
                         break
 
@@ -369,14 +370,14 @@ class SliceNode(StatementNode):
         self.upper = upper
         self.step = step
 
-        if self.step != None:
+        if self.step is not None:
             raise NotImplementedError()
 
     def eval(self):
         lower = upper = None
-        if self.lower != None:
+        if self.lower is not None:
             lower = self.lower.eval()
-        if self.upper != None:
+        if self.upper is not None:
             upper = self.upper.eval()
         return lower, upper
 

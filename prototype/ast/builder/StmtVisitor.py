@@ -17,7 +17,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         if ctx.statementList() is not None:
             for stmt in ctx.statementList().statement():
                 statement = self.visit(stmt)
-                if statement != None:
+                if statement is not None:
                     statements.append(statement)
 
         return statements
@@ -27,7 +27,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
         for sourceElement in ctx.sourceElement():
             statement =  self.visit(sourceElement.statement())
-            if statement != None:
+            if statement is not None:
                 if type(statement) is list:
                     statements += statement
                 else:
@@ -40,7 +40,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
     #     for smallStmt in ctx.small_stmt():
     #         statement = self.visit(smallStmt)
-    #         if statement != None:
+    #         if statement is not None:
     #             statements.append(statement)
 
     #     return statements
@@ -53,7 +53,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
     #     for smallStmt in ctx.small_stmt():
     #         statement = self.visit(smallStmt)
-    #         if statement != None:
+    #         if statement is not None:
     #             statements.append(statement)
 
     #     return statements
@@ -62,13 +62,13 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     # # Compound statements
     # #
     # def visitSuite(self, ctx:PrototypeParser.SuiteContext):
-    #     if ctx.simple_stmt() != None:
+    #     if ctx.simple_stmt() is not None:
     #         return self.visit(ctx.simple_stmt())
 
     #     statements = []
 
     #     for stmt in ctx.stmt():
-    #         if stmt.simple_stmt() != None:
+    #         if stmt.simple_stmt() is not None:
     #             statements += self.visit(stmt.simple_stmt())
     #         else:
     #             statements.append(self.visit(stmt))
@@ -123,7 +123,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     def visitFunctionBody(self, ctx:PrototypeParser.FunctionBodyContext):
         statements = []
 
-        if ctx.sourceElements() != None:
+        if ctx.sourceElements() is not None:
             statements = self.visit(ctx.sourceElements())
 
         return statements
@@ -145,7 +145,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
         if not self.validContextParents(ctx, validParents):
             raise runtime.Errors.SyntaxError("'return' outside function")
 
-        if ctx.expressionSequence() != None:
+        if ctx.expressionSequence() is not None:
             expressionSequence = self.visit(ctx.expressionSequence())
 
         return ast.stmt.ReturnStmtNode(expr=expressionSequence)
@@ -175,7 +175,7 @@ class StmtVisitorMixin(PrototypeParserVisitor):
     def validContextParents(self, context, properParents: tuple):
         context = context.parentCtx
 
-        while context != None:
+        while context is not None:
             context = context.parentCtx
             if isinstance(context, properParents):
                 return True

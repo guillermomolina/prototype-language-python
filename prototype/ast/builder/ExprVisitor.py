@@ -8,7 +8,7 @@ from prototype.ast.base import MemoryContext
 def getParameters(param_ctx:PrototypeParser.FormalParameterArgContext):
     params = []
 
-    if param_ctx != None:
+    if param_ctx is not None:
         for param_arg in param_ctx.formalParameterArg():
             if param_arg.singleExpression() is not None:
                 raise NotImplementedError()
@@ -179,7 +179,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
         for argStmt in ctx.arguments().argument():
             arg = self.visit(argStmt)
-            if arg != None:
+            if arg is not None:
                 args.append(arg)
 
         return ast.expr.CallExprNode(rcvr=receiver, func=funcName, args=args)
@@ -210,10 +210,10 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     # def visitSubscriptSlice(self, ctx:PrototypeParser.SubscriptSliceContext):
     #     lower = upper = None
 
-    #     if ctx.lower != None:
+    #     if ctx.lower is not None:
     #         lower = self.visit(ctx.lower)
 
-    #     if ctx.upper != None:
+    #     if ctx.upper is not None:
     #         upper = self.visit(ctx.upper)
 
     #     return ast.stmt.SliceNode(lower=lower, upper=upper, step=None)
@@ -222,14 +222,14 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #
 
     # def visitDictorsetmaker(self, ctx:PrototypeParser.DictorsetmakerContext):
-    #     if ctx.dictormaker() != None:
+    #     if ctx.dictormaker() is not None:
     #         return self.visit(ctx.dictormaker())
 
-    #     if ctx.setmaker() != None:
+    #     if ctx.setmaker() is not None:
     #         return self.visit(ctx.setmaker())
 
     # def visitDictMaker(self, ctx:PrototypeParser.DictMakerContext):
-    #     if ctx.dictorsetmaker() != None:
+    #     if ctx.dictorsetmaker() is not None:
     #         return self.visit(ctx.dictorsetmaker())
 
     #     return ast.expr.ObjectContainerNode({})
@@ -241,12 +241,12 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     #     return ast.expr.SetContainerNode(result)
 
     # def visitDictormaker(self, ctx:PrototypeParser.DictormakerContext):
-    #     if ctx.test(0) != None:
+    #     if ctx.test(0) is not None:
     #         left = self.visit(ctx.test(0))
     #         right = self.visit(ctx.test(1))
     #         return ast.expr.ObjectContainerNode({left : right})
 
-    #     if ctx.dictormaker(0) != None:
+    #     if ctx.dictormaker(0) is not None:
     #         left = self.visit(ctx.dictormaker(0))
     #         right = self.visit(ctx.dictormaker(1))
 
@@ -292,16 +292,16 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         return ast.expr.ArrayContainerNode(elements)
 
     # def visitTupleMaker(self, ctx:PrototypeParser.TupleMakerContext):
-    #     if ctx.testlist_comp() == None:
+    #     if ctx.testlist_comp() is None:
     #         return ast.expr.TupleContainerNode(())
 
     #     return ast.expr.TupleContainerNode(tuple(self.visit(ctx.testlist_comp())))
 
     # def visitTestlist_comp(self, ctx:PrototypeParser.Testlist_compContext):
-    #     if ctx.test() != None:
+    #     if ctx.test() is not None:
     #         return [self.visit(ctx.test())]
 
-    #     if ctx.testlist_comp(1) == None:
+    #     if ctx.testlist_comp(1) is None:
     #         return self.visit(ctx.testlist_comp(0))
 
     #     left = self.visit(ctx.testlist_comp(0))
@@ -326,7 +326,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
     def visitNumericLiteral(self, ctx: PrototypeParser.NumericLiteralContext):
 
-        if ctx.DecimalLiteral() != None:
+        if ctx.DecimalLiteral() is not None:
             try:
                 number = int(ctx.DecimalLiteral().getText())
                 return ast.expr.NumberNode(number)
@@ -334,19 +334,19 @@ class ExprVisitorMixin(PrototypeParserVisitor):
                 number = float(ctx.DecimalLiteral().getText())
                 return ast.expr.NumberNode(number)
 
-        elif ctx.HexIntegerLiteral() != None:
+        elif ctx.HexIntegerLiteral() is not None:
             hex = int(ctx.HexIntegerLiteral().getText(), 16)
             return ast.expr.NumberNode(hex)
 
-        elif ctx.BinaryIntegerLiteral() != None:
+        elif ctx.BinaryIntegerLiteral() is not None:
             bin = int(ctx.BinaryIntegerLiteral().getText(), 2)
             return ast.expr.NumberNode(bin)
 
-        elif ctx.OctalIntegerLiteral() != None:
+        elif ctx.OctalIntegerLiteral() is not None:
             oct = int(ctx.OctalIntegerLiteral().getText(), 8)
             return ast.expr.NumberNode(oct)
 
-        elif ctx.OctalIntegerLiteral2() != None:
+        elif ctx.OctalIntegerLiteral2() is not None:
             oct = int(ctx.OctalIntegerLiteral2().getText(), 8)
             return ast.expr.NumberNode(oct)
 

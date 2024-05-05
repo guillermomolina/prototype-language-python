@@ -42,7 +42,7 @@ class EvalArguments:
 
 
 def prototype_eval(sourcecode:str, firstRule=InputType.ExpressionNode, args=None):
-    if args == None:
+    if args is None:
         args = EvalArguments()
 
     totalTime = time.time()
@@ -87,7 +87,7 @@ def prototype_eval(sourcecode:str, firstRule=InputType.ExpressionNode, args=None
 
     astBuildTime = time.time() - astBuildTime
 
-    if ast == None:
+    if ast is None:
         return -1
 
     if args.parse_only:
@@ -156,7 +156,7 @@ def main():
     #
     isatty = True if sys.stdin.isatty() else False
 
-    if args.filename == None and (isatty or args.force_promt) and not args.eval_input:
+    if args.filename is None and (isatty or args.force_promt) and not args.eval_input:
         shell = InteractiveShell(args)
 
         if not args.ignore_greeting:
@@ -164,7 +164,7 @@ def main():
 
         shell.loop()
 
-    if args.eval_input != None:
+    if args.eval_input is not None:
         firstRule = InputType.SingleInput
         content = args.eval_input
     else:

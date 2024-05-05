@@ -86,7 +86,7 @@ class InteractiveShell:
                 # Evaluate it...
                 visitor = CustomVisitor()
                 ast = visitor.visitSingle_input(parse_tree)
-                if ast == None:
+                if ast is None:
                     continue
 
                 if self.args.parse_only:
@@ -97,12 +97,12 @@ class InteractiveShell:
                 #
                 # ast.eval() returns list of statements; loop through them and print
                 #
-                if results != None:
+                if results is not None:
                     for statement in results:
-                        if statement != None and not isinstance(statement, ControlFlowMark):
+                        if statement is not None and not isinstance(statement, ControlFlowMark):
                             sys.displayhook(statement)
 
-                #if results != None:
+                #if results is not None:
                 #    sys.displayhook(results)
 
             except KeyboardInterrupt as e:

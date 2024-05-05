@@ -1,3 +1,6 @@
+from prototype import runtime
+
+
 class Object:
     PROTOTYPE = None
 
@@ -9,6 +12,27 @@ class Object:
         self.prototype = prototype or Object.PROTOTYPE
         self.properties = properties or {}
 
+    def __repr__(self):
+        return self.properties.__repr__()
+
+    def __iter__(self):
+        return iter(self.properties)
+
+    def __getitem__(self, item):
+        try:
+            return self.properties.__getitem__(item)
+        except KeyError:
+            if self.prototype is not None:
+                return self.prototype[item]
+
+            raise runtime.Errors.NameError("property %s is not defined" % item)
+
+    def __setitem__(self, key, value):
+        return self.properties.__setitem__(key, value)
+
+    def __len__(self):
+        return self.properties.__len__()
+
     def __str__(self):
         values = []
         for key, value in self.properties.items():
@@ -17,6 +41,15 @@ class Object:
             else:
                 values.append(f"'{key}': {str(value)}")
         return '{' + ', '.join(values) + '}'
+
+        try:
+            # Search in the current scope first
+            return self.content[name]
+        except KeyError:
+            if self.outerScope is not None:
+                return self.outerScope.get(name)
+
+            raise runtime.Errors.NameError("name %s is not defined" % name)
 
 
 class Function(Object):

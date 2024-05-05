@@ -57,7 +57,7 @@ class AnonymousFunctionDef(ExpressionNode):
                 res = stmt.eval()
                 if isinstance(res, ControlFlowMark):
                     if res.type == ControlFlowMark.Type.Return:
-                        if res.toEval != None:
+                        if res.toEval is not None:
                             returnValue = res.toEval.eval()
                         break
 
@@ -261,13 +261,7 @@ class ThisExprNode(ExpressionNode):
         super().__init__()
 
     def eval(self):
-        raise NotImplementedError()
-        if self.ctx == MemoryContext.Load:
-            return self.getScope().get(name=self.id)
-        elif self.ctx == MemoryContext.Store:
-            return self.id
-        else:
-            raise NotImplementedError()
+        return self.getScope()
 
     def getScope(self):
         # Problem: we're very loosely coupled.

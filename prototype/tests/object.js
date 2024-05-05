@@ -1,5 +1,3 @@
-// print(Object)
-
 a = {
     "b": 1,
     "c": {
@@ -9,6 +7,5 @@ a = {
         return 5
     }
 }
-print(a)
 
-// print(a.e())
+a.e()
