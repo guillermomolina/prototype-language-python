@@ -151,8 +151,19 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         raise NotImplementedError()
 
     def visitArrowFunction(self, ctx:PrototypeParser.ArrowFunctionContext):
-        raise NotImplementedError()
-    
+        params_ctx = ctx.arrowFunctionParameters()
+        if params_ctx.propertyName() is not None:
+            params = [self.visit(params_ctx.propertyName())]
+        else:
+            params = getParameters(params_ctx.formalParameterList())
+        body_ctx = ctx.arrowFunctionBody()
+        body = self.visit(body_ctx)
+        source_code = body_ctx.start.source[1].strdata
+        start_index = body_ctx.start.start + 1
+        end_index = body_ctx.stop.stop
+        source_code = source_code[start_index:end_index]
+        return ast.expr.AnonymousFunctionDef(args=params, body=body, source_code=source_code)
+   
 
     #
     # NameNode access: Identifier, ArgumentsExpression, SubName
