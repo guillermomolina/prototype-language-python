@@ -3,6 +3,7 @@ import operator
 
 from prototype.ast.base import ExpressionNode, MemoryContext, ControlFlowMark
 from prototype import runtime
+from prototype.runtime.memory import Context
 from prototype.runtime.objects import Array, Boolean, Function, Null, Object
 
 
@@ -12,17 +13,17 @@ from prototype.runtime.objects import Array, Boolean, Function, Null, Object
 #   @args - list of arguments (just names)
 #   @body - list of statements, which form functions body
 #
-# Every function has name which is written to the outer scope.
-# For the top-level function definitions, the outer scope is the global scope.
-# For nested functions its the scope of the outer function.
+# Every function has name which is written to the outer context.
+# For the top-level function definitions, the outer context is the global context.
+# For nested functions its the context of the outer function.
 #
-# Our way to implement name scoping is to set current scope during the evaluation of ANY *STATEMENT*
+# Our way to implement name scoping is to set current context during the evaluation of ANY *STATEMENT*
 # Actually, we'll need to set the new (and then back the old one) when evaluating only functions,
 # as there are no scoping rules for other statements; thus, @NameNode expression will need to check
-# only single global variable - current scope, and function calls will switch scopes.
+# only single global variable - current context, and function calls will switch contexts.
 #
 # This solution is far from perfect. However, it just works as there is no need for modules.
-# Implementing modules will require providing each @NameNode node an ability to get a proper scope.
+# Implementing modules will require providing each @NameNode node an ability to get a proper context.
 """
 class AnonymousFunctionDef(ExpressionNode):
     def __init__(self, args:list, body:list, source_code:str):
@@ -31,17 +32,16 @@ class AnonymousFunctionDef(ExpressionNode):
         self.body = body
         self.source_code = source_code
 
-    def getScope(self) -> runtime.memory.Scope:
-        return runtime.memory.CurrentScope
+    def getContext(self) -> runtime.memory.Context:
+        return Context.current
 
     def eval(self) -> None:
 
-        declarationScope = self.getScope()
+        declarationContext = self.getContext()
 
-        def container(*args):
-            scope = runtime.memory.Scope(outerScope=declarationScope)
-            previousScope = runtime.memory.CurrentScope
-            runtime.memory.CurrentScope = scope
+        def container(rcvr, *args):
+            previousContext = Context.push(declarationContext, rcvr)
+            context = Context.current
 
             if len(args) != len(self.args):
                 message = "function() takes %d positional arguments but %d were given" % \
@@ -49,7 +49,7 @@ class AnonymousFunctionDef(ExpressionNode):
                 raise runtime.Errors.TypeError(message)
 
             for pair in zip (self.args, args):
-                scope.set(name=pair[0], value=pair[1])
+                context.set(name=pair[0], value=pair[1])
 
             returnValue = None
 
@@ -61,7 +61,7 @@ class AnonymousFunctionDef(ExpressionNode):
                             returnValue = res.toEval.eval()
                         break
 
-            runtime.memory.CurrentScope = previousScope
+            Context.pop(previousContext)
             return returnValue
         
         return Function(container, self.args, self.source_code)
@@ -240,15 +240,15 @@ class NameNode(ExpressionNode):
 
     def eval(self):
         if self.ctx == MemoryContext.Load:
-            return self.getScope().get(name=self.id)
+            return self.getContext().get(name=self.id)
         elif self.ctx == MemoryContext.Store:
             return self.id
         else:
             raise NotImplementedError()
 
-    def getScope(self):
+    def getContext(self):
         # Problem: we're very loosely coupled.
-        return runtime.memory.CurrentScope
+        return Context.current
 
 """
 # A variable name.
@@ -261,11 +261,11 @@ class ThisExprNode(ExpressionNode):
         super().__init__()
 
     def eval(self):
-        return self.getScope()
+        return self.getContext()
 
-    def getScope(self):
+    def getContext(self):
         # Problem: we're very loosely coupled.
-        return runtime.memory.CurrentScope
+        return Context.current
 
 """
 # Function call
@@ -283,7 +283,10 @@ class CallExprNode(ExpressionNode):
         rcvr = self.rcvr.eval()
         func = self.func.eval()
         evalArgs = [ arg.eval() for arg in self.args ]
-        return func(rcvr, *evalArgs)
+        if isinstance(func, Function):
+            return func.function(rcvr, *evalArgs)
+        else:            
+            return func(rcvr, *evalArgs)
 
 
 """
@@ -363,12 +366,14 @@ class ObjectContainerNode(CollectionContainerNode):
 
     def eval(self):
         result = Object()
+        previousContext = Context.push(Context.current, result)
 
         for key in self.value.keys():
             newKey = key.eval()
             newVal = self.value[key].eval()
             result.properties[newKey] = newVal
 
+        Context.pop(previousContext)
         return result
 
 

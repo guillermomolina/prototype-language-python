@@ -42,15 +42,6 @@ class Object:
                 values.append(f"'{key}': {str(value)}")
         return '{' + ', '.join(values) + '}'
 
-        try:
-            # Search in the current scope first
-            return self.content[name]
-        except KeyError:
-            if self.outerScope is not None:
-                return self.outerScope.get(name)
-
-            raise runtime.Errors.NameError("name %s is not defined" % name)
-
 
 class Function(Object):
     PROTOTYPE = None
@@ -89,7 +80,7 @@ class Array(Object):
     PROTOTYPE = None
 
     def __init__(self, array=None):
-        self.prototype = Array.PROTOTYPE
+        super().__init__(Array.PROTOTYPE)
         self.array = array or []
 
     def __str__(self):
@@ -100,7 +91,7 @@ class String(Object):
     PROTOTYPE = None
 
     def __init__(self, string=None):
-        self.prototype = String.PROTOTYPE
+        super().__init__(String.PROTOTYPE)
         self.string = string or ""
 
     def __str__(self):
@@ -111,7 +102,7 @@ class Number(Object):
     PROTOTYPE = None
 
     def __init__(self, number=None):
-        self.prototype = Number.PROTOTYPE
+        super().__init__(Number.PROTOTYPE)
         self.number = number or 0
 
     def __str__(self):
@@ -124,7 +115,7 @@ class Boolean(Object):
     TRUE = None
 
     def __init__(self, value=None):
-        self.prototype = Boolean.PROTOTYPE
+        super().__init__(Boolean.PROTOTYPE)
         self.value = value or False
 
     def __str__(self):
@@ -136,10 +127,28 @@ class Null(Object):
     INSTANCE = None
 
     def __init__(self):
-        self.prototype = Null.PROTOTYPE
+        super().__init__(Null.PROTOTYPE)
 
     def __str__(self):
         return 'null'  
+
+class Scope(Object):
+    PROTOTYPE = None
+    GLOBAL = None
+
+    def __init__(self, outerScope):
+        super().__init__(Scope.PROTOTYPE)
+        self.outerScope = outerScope
+
+
+    def __getitem__(self, item):
+        try:
+            return self.properties.__getitem__(item)
+        except KeyError:
+            if self.outerScope is not None:
+                return self.outerScope[item]
+
+            raise runtime.Errors.NameError("name %s is not defined in scope" % item)
 
 Object.PROTOTYPE = Prototype('Object', Function(Object))
 Function.PROTOTYPE = Prototype('Function', Function(Function))
@@ -153,5 +162,17 @@ Boolean.FALSE = Boolean(False)
 Boolean.TRUE = Boolean(True)
 Null.PROTOTYPE = Prototype('Null', Function(Null))
 Null.INSTANCE= Null()
+
+
+Scope.PROTOTYPE = Prototype('Scope', Function(Scope))
+Scope.GLOBAL= Scope(None)
+Scope.GLOBAL.properties['Object'] = Object.PROTOTYPE
+Scope.GLOBAL.properties['Array'] = Array.PROTOTYPE
+Scope.GLOBAL.properties['Function'] = Function.PROTOTYPE
+Scope.GLOBAL.properties['Prototype'] = Function.PROTOTYPE
+Scope.GLOBAL.properties['String'] = Prototype.PROTOTYPE
+Scope.GLOBAL.properties['Number'] = Number.PROTOTYPE
+Scope.GLOBAL.properties['Boolean'] = Boolean.PROTOTYPE
+Scope.GLOBAL.properties['Null'] = Null.PROTOTYPE
 
 Object.PROTOTYPE.properties['print'] = Function('print', print)

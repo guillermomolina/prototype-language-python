@@ -5,6 +5,7 @@ from prototype.ast.expr import BitAndOpNode, BitOrOpNode, BitXorOpNode, NameNode
 
 from prototype import ast
 from prototype import runtime
+from prototype.runtime.memory import Context
 
 """
 # Function definition.
@@ -12,17 +13,17 @@ from prototype import runtime
 #   @args - list of arguments (just names)
 #   @body - list of statements, which form functions body
 #
-# Every function has name which is written to the outer scope.
-# For the top-level function definitions, the outer scope is the global scope.
-# For nested functions its the scope of the outer function.
+# Every function has name which is written to the outer context.
+# For the top-level function definitions, the outer context is the global context.
+# For nested functions its the context of the outer function.
 #
-# Our way to implement name scoping is to set current scope during the evaluation of ANY *STATEMENT*
+# Our way to implement name scoping is to set current context during the evaluation of ANY *STATEMENT*
 # Actually, we'll need to set the new (and then back the old one) when evaluating only functions,
 # as there are no scoping rules for other statements; thus, @NameNode expression will need to check
-# only single global variable - current scope, and function calls will switch scopes.
+# only single global variable - current context, and function calls will switch contexts.
 #
 # This solution is far from perfect. However, it just works as there is no need for modules.
-# Implementing modules will require providing each @NameNode node an ability to get a proper scope.
+# Implementing modules will require providing each @NameNode node an ability to get a proper context.
 """
 class FunctionDef(StatementNode):
     def __init__(self, name:str, args:list, body:list):
@@ -31,18 +32,18 @@ class FunctionDef(StatementNode):
         self.args = args
         self.body = body
 
-    def getScope(self) -> runtime.memory.Scope:
-        return runtime.memory.CurrentScope
+    def getContext(self) -> runtime.memory.Context:
+        return Context.current
 
     def eval(self) -> None:
         raise NotImplementedError()
 
-        declarationScope = self.getScope()
+        declarationContext = self.getContext()
 
         def container(*args):
-            scope = runtime.memory.Scope(outerScope=declarationScope)
-            previousScope = runtime.memory.CurrentScope
-            runtime.memory.CurrentScope = scope
+            context = runtime.memory.Context(outerContext=declarationContext)
+            previousContext = Context.current
+            Context.current = context
 
             if len(args) != len(self.args):
                 message = "%s() takes %d positional arguments but %d were given" % \
@@ -50,7 +51,7 @@ class FunctionDef(StatementNode):
                 raise runtime.Errors.TypeError(message)
 
             for pair in zip (self.args, args):
-                scope.set(name=pair[0], value=pair[1])
+                context.set(name=pair[0], value=pair[1])
 
             returnValue = None
 
@@ -62,12 +63,12 @@ class FunctionDef(StatementNode):
                             returnValue = res.toEval.eval()
                         break
 
-            runtime.memory.CurrentScope = previousScope
+            Context.current = previousContext
             return returnValue
 
         # Finally, write the function container to the memory.
         # Call to the container will trigger eval of function body
-        declarationScope.set(self.name, container)
+        declarationContext.set(self.name, container)
         return None
 
 
@@ -173,11 +174,11 @@ class ForInStmt(StatementNode):
         result = []
 
         # Check if target name exists. If no - create it.
-        #runtime.memory.CurrentScope.get(self)
+        #Context.current.get(self)
 
         for x in self.iter.eval():
             # Set target to the current value
-            runtime.memory.CurrentScope.set(self.target.id, x)
+            Context.current.set(self.target.id, x)
 
             shouldBreak = False
             for stmt in self.body:
@@ -231,7 +232,7 @@ class AssignStmt(StatementNode):
             lValue.collection[lValue.index] = rValue
             return
 
-        runtime.memory.CurrentScope.set(name=lValue, value=rValue)
+        Context.current.set(name=lValue, value=rValue)
 
 class AugAssignStmt(AssignStmt):
     opTable = {
@@ -285,7 +286,7 @@ class PropertyNode(StatementNode):
             # if hasattr(value, self.attr):
             #     return getattr(value, self.attr)
             if self.attr in value:
-                return value.get(self.attr)
+                return value[self.attr]
             else:
                 msg = "object has no attribute %s" % self.attr
                 raise runtime.Errors.AttributeError(msg)

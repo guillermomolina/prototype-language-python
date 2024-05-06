@@ -168,13 +168,12 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
     def visitArgumentsExpression(self, ctx: PrototypeParser.ArgumentsExpressionContext):
         receiver_ctx =  ctx.singleExpression()
+        funcName = self.visit(receiver_ctx)
 
         if isinstance(receiver_ctx, PrototypeParser.MemberDotExpressionContext):
-            receiver = self.visit(receiver_ctx.singleExpression()) 
-            funcName = self.visit(receiver_ctx.identifierName())           
+            receiver = funcName.value
         else:
             receiver = ast.expr.ThisExprNode()
-            funcName = self.visit(receiver_ctx)
         args = []
 
         for argStmt in ctx.arguments().argument():
