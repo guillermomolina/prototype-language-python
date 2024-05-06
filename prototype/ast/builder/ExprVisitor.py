@@ -147,6 +147,9 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         source_code = source_code[start_index:end_index]
         return ast.expr.AnonymousFunctionDef(args=params, body=body, source_code=source_code)
 
+    def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
+        raise NotImplementedError()
+
     def visitArrowFunction(self, ctx:PrototypeParser.ArrowFunctionContext):
         raise NotImplementedError()
     
@@ -155,15 +158,14 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     # NameNode access: Identifier, ArgumentsExpression, SubName
     #
 
-    def nameContextFor(self, ctx):
-        parentContext = ctx.parentCtx.parentCtx
+    def nameContextFor(self, parentContext):
         if type(parentContext) is PrototypeParser.AssignmentExpressionContext or type(parentContext) is PrototypeParser.AssignmentOperatorExpressionContext:
             return MemoryContext.Store
         else:
             return MemoryContext.Load
 
     def visitIdentifier(self, ctx: PrototypeParser.IdentifierContext):
-        context = self.nameContextFor(ctx)
+        context = self.nameContextFor(ctx.parentCtx.parentCtx)
         return ast.expr.NameNode(id=ctx.getText(), ctx=context)
 
     def visitArgumentsExpression(self, ctx: PrototypeParser.ArgumentsExpressionContext):
@@ -186,7 +188,8 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     def visitMemberDotExpression(self, ctx: PrototypeParser.MemberDotExpressionContext):
         left = self.visit(ctx.singleExpression())
         attrName = ctx.identifierName().getText()
-        return ast.stmt.PropertyNode(value=left, attr=attrName, ctx=MemoryContext.Load)
+        context = self.nameContextFor(ctx.parentCtx)
+        return ast.stmt.PropertyNode(value=left, attr=attrName, ctx=context)
 
     def visitMemberIndexExpression(self, ctx: PrototypeParser.MemberIndexExpressionContext):
         leftNode = self.visit(ctx.singleExpression())

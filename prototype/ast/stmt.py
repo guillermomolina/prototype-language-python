@@ -231,9 +231,13 @@ class AssignStmt(StatementNode):
 
         if isinstance(lValue, SubscriptNode.AssignWrapper):
             lValue.collection[lValue.index] = rValue
-            return
+        elif isinstance(lValue, PropertyNode.AssignWrapper):
+            lValue.object[lValue.property] = rValue
+        else:
+            Context.current.set(name=lValue, value=rValue)
 
-        Context.current.set(name=lValue, value=rValue)
+        return rValue
+
 
 class AugAssignStmt(AssignStmt):
     opTable = {
@@ -269,10 +273,10 @@ class AugAssignStmt(AssignStmt):
 """
 class PropertyNode(StatementNode):
 
-    class Wrapper():
-        def __init__(self, name, attr):
-            self.name = name
-            self.attr = attr
+    class AssignWrapper():
+        def __init__(self, object, property):
+            self.object = object
+            self.property = property
 
     def __init__(self, value, attr, ctx):
         super().__init__()
@@ -300,14 +304,9 @@ class PropertyNode(StatementNode):
         if self.ctx == MemoryContext.Load:
             return value[self.attr]
         elif self.ctx == MemoryContext.Store:
-            raise NotImplementedError("Assigning to attributes is not supported!")
-            #
-            # if isinstance(value, object):
-            #     if value.__class__.__module__ == 'builtins':
-            #         raise runtime.Errors.ArithmeticError("writing to attributes of built-in objects is not supported")
-            #     elif callable(value):
-            #         return PropertyNode.Wrapper(self.value, self.attr)
-
+            return PropertyNode.AssignWrapper(value, self.attr)
+        else:
+            raise NotImplementedError()
 
 """
 A subscript, such as l[1].
