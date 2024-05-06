@@ -6,6 +6,7 @@ from prototype.ast.expr import BitAndOpNode, BitOrOpNode, BitXorOpNode, NameNode
 from prototype import ast
 from prototype import runtime
 from prototype.runtime.memory import Context
+from prototype.runtime.objects import Array, Boolean, Null, Number, Object, String
 
 """
 # Function definition.
@@ -282,14 +283,22 @@ class PropertyNode(StatementNode):
     def eval(self):
         value = self.value.eval()
 
+        if value is None:
+            value = Null.INSTANCE
+        elif value is True:
+            value = Boolean.TRUE
+        elif value is False:
+            value = Boolean.FALSE
+        elif isinstance(value, int) or isinstance(value, float):
+            value = Number.PROTOTYPE
+        elif isinstance(value, str):
+            value = String.PROTOTYPE
+        elif isinstance(value, list):
+            value = Array.PROTOTYPE
+        elif isinstance(value, dict):
+            value = Object.PROTOTYPE
         if self.ctx == MemoryContext.Load:
-            # if hasattr(value, self.attr):
-            #     return getattr(value, self.attr)
-            if self.attr in value:
-                return value[self.attr]
-            else:
-                msg = "object has no attribute %s" % self.attr
-                raise runtime.Errors.AttributeError(msg)
+            return value[self.attr]
         elif self.ctx == MemoryContext.Store:
             raise NotImplementedError("Assigning to attributes is not supported!")
             #

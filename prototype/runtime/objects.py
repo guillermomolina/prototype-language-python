@@ -70,7 +70,7 @@ class Prototype(Function):
         self.name = name
 
     def __str__(self):
-        return self.name
+        return self.name + super().__str__()
 
     def constructor(self):
         pass
@@ -175,4 +175,4 @@ Scope.GLOBAL.properties['Number'] = Number.PROTOTYPE
 Scope.GLOBAL.properties['Boolean'] = Boolean.PROTOTYPE
 Scope.GLOBAL.properties['Null'] = Null.PROTOTYPE
 
-Object.PROTOTYPE.properties['print'] = Function('print', print)
+Object.PROTOTYPE.properties['print'] = Function(print)
