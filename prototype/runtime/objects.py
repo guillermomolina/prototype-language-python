@@ -46,12 +46,24 @@ class Object:
 class Function(Object):
     PROTOTYPE = None
 
-    def __init__(self, function, arguments=None, source_code=None, prototype=None, properties=None):
+    def __init__(self, function, arguments=None, variables=None, sharedVariables=None, source_code=None, prototype=None, properties=None):
         super().__init__(prototype or Function.PROTOTYPE, properties)
         self.function = function
         self.arguments = arguments or []
+        self.variables = variables or []
+        self.sharedVariables = sharedVariables or []
         self.source_code = source_code
 
+    def __str__(self):
+        string = 'function ('
+        string += ', '.join(self.arguments)
+        string += ') {'
+        string += self.source_code or ' /* native code */ '
+        string += '}'
+        return string
+
+
+class ArrowFunction(Function):
     def __str__(self):
         string = '('
         string += ', '.join(self.arguments)
@@ -64,13 +76,18 @@ class Function(Object):
 class Prototype(Function):
     PROTOTYPE = None
 
-    def __init__(self, name, constructor=None, arguments=None, source_code=None, prototype=None, properties=None):
-        super().__init__(constructor or self.constructor, arguments, source_code,
+    def __init__(self, name, constructor=None, arguments=None, variables=None, sharedVariables=None, source_code=None, prototype=None, properties=None):
+        super().__init__(constructor or self.constructor, arguments, variables, sharedVariables, source_code,
                          prototype or Prototype.PROTOTYPE, properties)
         self.name = name
 
     def __str__(self):
-        return self.name + super().__str__()
+        string = self.name + '('
+        string += ', '.join(self.arguments)
+        string += ') {'
+        string += self.source_code or ' /* native code */ '
+        string += '}'
+        return string
 
     def constructor(self):
         pass

@@ -145,7 +145,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         start_index = body_ctx.start.start + 1
         end_index = body_ctx.stop.stop
         source_code = source_code[start_index:end_index]
-        return ast.expr.AnonymousFunctionDef(args=params, body=body, source_code=source_code)
+        return ast.expr.AnonymousFunctionDefNode(args=params, body=body, source_code=source_code)
 
     def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
         raise NotImplementedError()
@@ -162,7 +162,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         start_index = body_ctx.start.start + 1
         end_index = body_ctx.stop.stop
         source_code = source_code[start_index:end_index]
-        return ast.expr.AnonymousFunctionDef(args=params, body=body, source_code=source_code)
+        return ast.expr.ArrowFunctionDefNode(args=params, body=body, source_code=source_code)
    
 
     #

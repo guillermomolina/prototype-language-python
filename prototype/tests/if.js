@@ -23,4 +23,6 @@ false.ifFalse = function (falseBlock) {
 }
 
 // a = 5
-(0 < 5).if(() => "true".print(), () => "false".print() )
+// (0 < 5).if(() => "true".print(), () => "false".print() )
+false.ifFalse.print()
+Object.print()

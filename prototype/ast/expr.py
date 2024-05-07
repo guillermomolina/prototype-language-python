@@ -4,7 +4,7 @@ import operator
 from prototype.ast.base import ExpressionNode, MemoryContext, ControlFlowMark
 from prototype import runtime
 from prototype.runtime.memory import Context
-from prototype.runtime.objects import Array, Boolean, Function, Null, Object
+from prototype.runtime.objects import Array, ArrowFunction, Boolean, Function, Null, Object
 
 
 
@@ -25,7 +25,7 @@ from prototype.runtime.objects import Array, Boolean, Function, Null, Object
 # This solution is far from perfect. However, it just works as there is no need for modules.
 # Implementing modules will require providing each @NameNode node an ability to get a proper context.
 """
-class AnonymousFunctionDef(ExpressionNode):
+class AnonymousFunctionDefNode(ExpressionNode):
     def __init__(self, args:list, body:list, source_code:str):
         super().__init__()
         self.args = args
@@ -51,7 +51,7 @@ class AnonymousFunctionDef(ExpressionNode):
             for pair in zip (self.args, args):
                 context.set(name=pair[0], value=pair[1])
 
-            returnValue = None
+            returnValue = rcvr
 
             for stmt in self.body:
                 res = stmt.eval()
@@ -64,7 +64,48 @@ class AnonymousFunctionDef(ExpressionNode):
             Context.pop(previousContext)
             return returnValue
         
-        return Function(container, self.args, self.source_code)
+        return Function(container, self.args, self.vars, self.sharedVars, self.source_code)
+
+class ArrowFunctionDefNode(ExpressionNode):
+    def __init__(self, args:list, body:list, source_code:str):
+        super().__init__()
+        self.args = args
+        self.body = body
+        self.source_code = source_code
+
+    def getContext(self) -> runtime.memory.Context:
+        return Context.current
+
+    def eval(self) -> None:
+
+        declarationContext = self.getContext()
+
+        def container(*args):
+            previousContext = Context.push(declarationContext)
+            context = Context.current
+
+            if len(args) != len(self.args):
+                message = "function() takes %d positional arguments but %d were given" % \
+                          (len(self.args), len(args))
+                raise runtime.Errors.TypeError(message)
+
+            for pair in zip (self.args, args):
+                context.set(name=pair[0], value=pair[1])
+
+            returnValue = None
+
+            for stmt in self.body:
+                returnValue = res = stmt.eval()
+                if isinstance(res, ControlFlowMark):
+                    if res.type == ControlFlowMark.Type.Return:
+                        if res.toEval is not None:
+                            returnValue = res.toEval.eval()
+                        break
+
+            Context.pop(previousContext)
+            return returnValue
+        
+        return ArrowFunction(container, self.args, self.vars, self.sharedVars, self.source_code)
 
 
 """

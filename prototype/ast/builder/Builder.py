@@ -1,4 +1,5 @@
 from prototype.ast.builder.ExprVisitor import ExprVisitorMixin
+from prototype.ast.builder.Scope import Scope
 from prototype.ast.builder.StmtVisitor import StmtVisitorMixin
 
 from prototype.parser.PrototypeParser import PrototypeParser
@@ -26,11 +27,14 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # Visit parse tree produced from a file
     #
     def visitProgram(self, ctx:PrototypeParser.ProgramContext):
+        Scope.enterArrowFunction()
+        
         statements = []
 
         if ctx.sourceElements() is not None:
             statements = self.visit(ctx.sourceElements())
 
+        Scope.leave()
         return base.Module(body=statements)
 
     # #
