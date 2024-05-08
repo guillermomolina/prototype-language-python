@@ -28,14 +28,12 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     #
     def visitProgram(self, ctx:PrototypeParser.ProgramContext):
         Scope.enter()
-        
+        scope = Scope.CURRENT
         statements = []
-
         if ctx.sourceElements() is not None:
             statements = self.visit(ctx.sourceElements())
-
         Scope.leave()
-        return base.Module(body=statements)
+        return base.Module(scope, body=statements)
 
     # #
     # # Visit parse tree produced from a file

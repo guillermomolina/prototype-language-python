@@ -1,5 +1,6 @@
 from prototype import runtime
-    
+
+
 class Object:
     PROTOTYPE = None
     GLOBALS = None
@@ -26,14 +27,14 @@ class Object:
             return Object.PROTOTYPE
         if isinstance(value, Object):
             return value
-        raise ValueError("unkonw object type")       
+        raise ValueError("unkonw object type")
 
     def __init__(self, prototype=None, properties=None):
         self.prototype = prototype or Object.PROTOTYPE
         self.properties = properties or {}
 
     def __repr__(self):
-        return self.properties.__repr__()
+        return str(self)
 
     def __iter__(self):
         return iter(self.properties)
@@ -56,10 +57,7 @@ class Object:
     def __str__(self):
         values = []
         for key, value in self.properties.items():
-            if isinstance(value, Function):
-                values.append(f'{key}{str(value)}')
-            else:
-                values.append(f"'{key}': {str(value)}")
+            values.append(f"'{key}': {str(value)}")
         return '{' + ', '.join(values) + '}'
 
 
@@ -75,9 +73,9 @@ class Function(Object):
     def __str__(self):
         string = 'function ('
         string += ', '.join(self.parameters)
-        string += ') {'
-        string += self.source_code or ' /* native code */ '
-        string += '}'
+        string += ') { '
+        string += self.source_code or '/* native code */'
+        string += ' }'
         return string
 
 
@@ -85,9 +83,9 @@ class ArrowFunction(Function):
     def __str__(self):
         string = '('
         string += ', '.join(self.parameters)
-        string += ') => {'
-        string += self.source_code or ' /* native code */ '
-        string += '}'
+        string += ') { '
+        string += self.source_code or '/* native code */'
+        string += ' }'
         return string
 
 
@@ -100,11 +98,11 @@ class Prototype(Function):
         self.name = name
 
     def __str__(self):
-        string = self.name + '('
+        string = 'function ' + self.name + '('
         string += ', '.join(self.parameters)
-        string += ') {'
-        string += self.source_code or ' /* native code */ '
-        string += '}'
+        string += ') { '
+        string += self.source_code or '/* native code */'
+        string += ' }'
         return string
 
     def constructor(self):
@@ -168,17 +166,17 @@ class Null(Object):
         return 'null'
 
 
-Object.PROTOTYPE = Prototype('Object', Function(Object))
-Function.PROTOTYPE = Prototype('Function', Function(Function))
+Object.PROTOTYPE = Prototype('Object')
+Function.PROTOTYPE = Prototype('Function')
 Function.PROTOTYPE.prototype = Object.PROTOTYPE
-Array.PROTOTYPE = Prototype('Array', Function(Array))
-Prototype.PROTOTYPE = Prototype('Prototype', Function(Prototype))
-String.PROTOTYPE = Prototype('String', Function(String))
-Number.PROTOTYPE = Prototype('Number', Function(Number))
-Boolean.PROTOTYPE = Prototype('Boolean', Function(Boolean))
+Array.PROTOTYPE = Prototype('Array')
+Prototype.PROTOTYPE = Prototype('Prototype')
+String.PROTOTYPE = Prototype('String')
+Number.PROTOTYPE = Prototype('Number')
+Boolean.PROTOTYPE = Prototype('Boolean')
 Boolean.FALSE = Boolean(False)
 Boolean.TRUE = Boolean(True)
-Null.PROTOTYPE = Prototype('Null', Function(Null))
+Null.PROTOTYPE = Prototype('Null')
 Null.INSTANCE = Null()
 
 

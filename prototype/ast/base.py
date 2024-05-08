@@ -11,21 +11,26 @@ class Node:
 
 """ Input types """
 
+
 class Module(Node):
-    def __init__(self, body:list):
+    def __init__(self, scope: any, body: list):
         super().__init__()
+        self.scope = scope
         self.body = body
 
     def eval(self):
-        MemoryContext.push(FunctionMemoryContext(Object.GLOBALS, {}))
+        slots = dict.fromkeys(self.scope.variables)
+        context = FunctionMemoryContext(Object.GLOBALS, slots)
+        MemoryContext.push(context)
         if type(self.body) is not list:
             self.body.eval()
         for stmt in self.body:
             stmt.eval()
         MemoryContext.pop()
 
+
 class InteractiveNode(Node):
-    def __init__(self, body:list):
+    def __init__(self, body: list):
         super().__init__()
         self.body = body
 
@@ -47,6 +52,7 @@ class EvalExpressionNode(Node):
 
 """ Base node types """
 
+
 class ExpressionNode(Node):
     def __init__(self):
         super().__init__()
@@ -58,6 +64,8 @@ class StatementNode(Node):
 
 
 """ Memory context for names, attributes, indexes, etc. """
+
+
 class MemoryContextAccessType(Enum):
     Load = 1
     Store = 2
@@ -67,10 +75,10 @@ class MemoryContextAccessType(Enum):
 class ControlFlowMark:
 
     class Type(Enum):
-        Return   = 1
-        Break    = 2
+        Return = 1
+        Break = 2
         Continue = 3
-        Pass     = 4
+        Pass = 4
 
     def __init__(self, type, toEval=None):
         self.type = type

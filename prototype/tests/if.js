@@ -10,7 +10,6 @@ true.ifFalse = function (falseBlock) {
     return null
 }
 
-
 false.if = function (trueBlock, falseBlock) {
     return falseBlock()
 }
@@ -23,7 +22,10 @@ false.ifFalse = function (falseBlock) {
     return falseBlock()
 }
 
-a = 5
-b = (a < 5)
-b.if(() => "true".print(), () => "false".print() )
+trueBlock = () => "true".print()
+falseBlock = () => "false".print()
+a = 0;
+(a < 5).if(trueBlock, falseBlock)
+a = 10;
+(a < 5).if(trueBlock, falseBlock)
 

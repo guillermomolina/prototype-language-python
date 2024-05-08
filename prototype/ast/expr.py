@@ -58,7 +58,7 @@ class AnonymousFunctionDefNode(ExpressionNode):
             MemoryContext.pop()
             return returnValue
         
-        return Function(container, self.scope, self.source_code)
+        return Function(container, self.scope.parameters, self.source_code)
 
 class ArrowFunctionDefNode(ExpressionNode):
     def __init__(self, scope:any, body:list, source_code:str):
@@ -68,9 +68,9 @@ class ArrowFunctionDefNode(ExpressionNode):
         self.source_code = source_code
 
     def eval(self) -> None:
-        declarationContext = MemoryContext.getFunctionContext()
+        declarationContext = MemoryContext.CURRENT.getFunctionContext()
 
-        def container(*args):
+        def container(rcvr, *args):
             if len(args) != len(self.scope.parameters):
                 message = "function() takes %d positional arguments but %d were given" % \
                           (len(self.scope.parameters), len(args))
@@ -95,7 +95,7 @@ class ArrowFunctionDefNode(ExpressionNode):
             MemoryContext.pop()
             return returnValue
         
-        return ArrowFunction(container, self.scope, self.source_code)
+        return ArrowFunction(container, self.scope.parameters, self.source_code)
 
 
 """

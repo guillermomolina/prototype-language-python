@@ -15,19 +15,28 @@ class Scope:
     def __init__(self, outerScope):
         self.outerScope = outerScope
         self.variables = []
-   
-    def addVariable(self, id, forceLocal=False):
+
+    def getFunctionScope(self):
+        scope = self
+        while scope is not None:
+            if isinstance(scope, FunctionScope):
+                return scope
+            scope = scope.outerScope
+        raise NameError("Scope is wrong")
+
+    def hasVariable(self, id):
         if id in self.variables:
-            return
-        if hasattr(Object.GLOBALS, id):
-            return
-        self.variables.append(id)
+            return True
+        return hasattr(Object.GLOBALS, id)
+
+    def addVariable(self, id, forceLocal=False):
+        if not self.hasVariable(id) or forceLocal:
+            self.variables.append(id)
 
 class LoopScope(Scope):
     pass
 
 class FunctionScope(Scope):
-
     @classmethod
     def enter(cls, parameters=[]):   
         Scope.CURRENT = cls(Scope.CURRENT, parameters)
@@ -35,8 +44,17 @@ class FunctionScope(Scope):
     def __init__(self, outerScope=None, parameters=[]):
         super().__init__(outerScope)
         self.parameters = parameters
+   
+    def hasVariable(self, id):
+        if id in self.parameters:
+            return True
+        return super().hasVariable(id)
 
-class ArrowFunctionScope(FunctionScope):
-
-    pass
+class ArrowFunctionScope(FunctionScope):   
+    def hasVariable(self, id):
+        if super().hasVariable(id):
+            return True
+        if self.outerScope is None:
+            raise NameError("Scope is wrong")
+        return self.outerScope.hasVariable(id)
 

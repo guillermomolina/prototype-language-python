@@ -6,15 +6,6 @@ class MemoryContext:
     CURRENT = None
 
     @classmethod
-    def getFunctionContext(cls):
-        context = MemoryContext.CURRENT
-        while context is not None:
-            if isinstance(context, FunctionMemoryContext):
-                return context
-            context = context.previousContext
-        raise runtime.Errors.MemoryError("MemoryContext stack is not yet initialized")
-
-    @classmethod
     def push(cls, context):
         context.previousContext = MemoryContext.CURRENT
         MemoryContext.CURRENT = context
@@ -28,6 +19,14 @@ class MemoryContext:
     def __init__(self, slots):
         self.previousContext = None
         self.slots = slots
+
+    def getFunctionContext(self):
+        context = self
+        while context is not None:
+            if isinstance(context, FunctionMemoryContext):
+                return context
+            context = context.previousContext
+        raise runtime.Errors.MemoryError("MemoryContext stack is not yet initialized")
 
     def get(self, name):
         if name in self.slots:
@@ -76,5 +75,5 @@ class ClosureMemoryContext(MemoryContext):
         raise NotImplementedError()
 
     def getReceiver(self):
-        context = MemoryContext.getFunctionContext()
+        context = self.getFunctionContext()
         return context.receiver

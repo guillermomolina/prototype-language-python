@@ -163,10 +163,15 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         ArrowFunctionScope.enter(params)
         scope = Scope.CURRENT
         body_ctx = ctx.arrowFunctionBody()
-        body = self.visit(body_ctx)
         source_code = body_ctx.start.source[1].strdata
-        start_index = body_ctx.start.start + 1
+        start_index = body_ctx.start.start
         end_index = body_ctx.stop.stop
+        if body_ctx.functionBody() is not None:
+            body = self.visit(body_ctx.functionBody())
+            start_index += 1
+        else:
+            body = [self.visit(body_ctx.singleExpression())]
+            end_index += 1
         source_code = source_code[start_index:end_index]
         Scope.leave()
         return ast.expr.ArrowFunctionDefNode(scope=scope, body=body, source_code=source_code)
@@ -196,6 +201,7 @@ class ExprVisitorMixin(PrototypeParserVisitor):
             receiver = funcName.value
         else:
             receiver = ast.expr.ThisExprNode()
+            # receiver = None
         args = []
 
         for argStmt in ctx.arguments().argument():
