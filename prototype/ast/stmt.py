@@ -42,7 +42,7 @@ class FunctionDef(StatementNode):
         declarationContext = self.getContext()
 
         def container(*args):
-            context = runtime.memory.MemoryContext(outerContext=declarationContext)
+            context = FunctionMemoryContext(outerContext=declarationContext)
             previousContext = MemoryContext.CURRENT
             MemoryContext.CURRENT = context
 
@@ -285,22 +285,8 @@ class PropertyNode(StatementNode):
         self.accessType = accessType
 
     def eval(self):
-        value = self.value.eval()
+        value = Object.fromNative(self.value.eval())
 
-        if value is None:
-            value = Null.INSTANCE
-        elif value is True:
-            value = Boolean.TRUE
-        elif value is False:
-            value = Boolean.FALSE
-        elif isinstance(value, int) or isinstance(value, float):
-            value = Number.PROTOTYPE
-        elif isinstance(value, str):
-            value = String.PROTOTYPE
-        elif isinstance(value, list):
-            value = Array.PROTOTYPE
-        elif isinstance(value, dict):
-            value = Object.PROTOTYPE
         if self.accessType == MemoryContextAccessType.Load:
             return value[self.attr]
         elif self.accessType == MemoryContextAccessType.Store:

@@ -1,6 +1,7 @@
 from enum import Enum
 
-from prototype.runtime.memory import MemoryContext
+from prototype.runtime.memory import FunctionMemoryContext, MemoryContext
+from prototype.runtime.objects import Object
 
 
 class Node:
@@ -16,7 +17,7 @@ class Module(Node):
         self.body = body
 
     def eval(self):
-        MemoryContext.push(MemoryContext({}))
+        MemoryContext.push(FunctionMemoryContext(Object.GLOBALS, {}))
         if type(self.body) is not list:
             self.body.eval()
         for stmt in self.body:

@@ -1,6 +1,5 @@
 from prototype import runtime
-
-
+    
 class Object:
     PROTOTYPE = None
     GLOBALS = None
@@ -8,6 +7,26 @@ class Object:
     @classmethod
     def initialize(cls):
         pass
+
+    @classmethod
+    def fromNative(cls, value):
+        if value is None:
+            return Null.INSTANCE
+        if value is True:
+            return Boolean.TRUE
+        if value is False:
+            return Boolean.FALSE
+        if isinstance(value, int) or isinstance(value, float):
+            return Number.PROTOTYPE
+        if isinstance(value, str):
+            return String.PROTOTYPE
+        if isinstance(value, list):
+            return Array.PROTOTYPE
+        if isinstance(value, dict):
+            return Object.PROTOTYPE
+        if isinstance(value, Object):
+            return value
+        raise ValueError("unkonw object type")       
 
     def __init__(self, prototype=None, properties=None):
         self.prototype = prototype or Object.PROTOTYPE

@@ -1,4 +1,4 @@
-/*true.if = function (trueBlock, falseBlock) {
+true.if = function (trueBlock, falseBlock) {
     return trueBlock()
 }
 
@@ -23,7 +23,7 @@ false.ifFalse = function (falseBlock) {
     return falseBlock()
 }
 
-// a = 5
-// (0 < 5).if(() => "true".print(), () => "false".print() )
-true.if.print()*/
-Object.print()
+a = 5
+b = (a < 5)
+b.if(() => "true".print(), () => "false".print() )
+

@@ -3,7 +3,7 @@ import operator
 
 from prototype.ast.base import ExpressionNode, MemoryContextAccessType, ControlFlowMark
 from prototype import runtime
-from prototype.runtime.memory import ClosureMemoryContext, MemoryContext
+from prototype.runtime.memory import ClosureMemoryContext, FunctionMemoryContext, MemoryContext
 from prototype.runtime.objects import Array, ArrowFunction, Boolean, Function, Null, Object
 
 
@@ -34,18 +34,15 @@ class AnonymousFunctionDefNode(ExpressionNode):
 
     def eval(self) -> None:
         def container(rcvr, *args):
-            slots = dict.fromkeys(self.scope.variables)
-            slots["this"] = rcvr
-
-            if len(args) != len(self.args):
+            if len(args) != len(self.scope.parameters):
                 message = "function() takes %d positional arguments but %d were given" % \
-                          (len(self.args), len(args))
+                          (len(self.scope.parameters), len(args))
                 raise runtime.Errors.TypeError(message)
 
-            for pair in zip(self.scope.args, args):
-                slots.set(name=pair[0], value=pair[1])
+            slots = dict(zip(self.scope.parameters, args))
+            slots.update(dict.fromkeys(self.scope.variables))
 
-            context = MemoryContext(slots)
+            context = FunctionMemoryContext(rcvr, slots)
             MemoryContext.push(context)
 
             returnValue = rcvr
@@ -74,15 +71,13 @@ class ArrowFunctionDefNode(ExpressionNode):
         declarationContext = MemoryContext.getFunctionContext()
 
         def container(*args):
-            slots = dict.fromkeys(self.scope.variables)
-
-            if len(args) != len(self.args):
+            if len(args) != len(self.scope.parameters):
                 message = "function() takes %d positional arguments but %d were given" % \
-                          (len(self.args), len(args))
+                          (len(self.scope.parameters), len(args))
                 raise runtime.Errors.TypeError(message)
 
-            for pair in zip(self.scope.args, args):
-                slots.set(name=pair[0], value=pair[1])
+            slots = dict(zip(self.scope.parameters, args))
+            slots.update(dict.fromkeys(self.scope.variables))
 
             context = ClosureMemoryContext(declarationContext, slots)
             MemoryContext.push(context)
@@ -297,7 +292,7 @@ class ThisExprNode(ExpressionNode):
         super().__init__()
 
     def eval(self):
-        return self.getContext()
+        return self.getContext().getReceiver()
 
     def getContext(self):
         # Problem: we're very loosely coupled.
@@ -312,7 +307,7 @@ class CallExprNode(ExpressionNode):
     def __init__(self, rcvr, func, args):
         super().__init__()
         self.rcvr = rcvr
-        self.func = func   # name
+        self.func = func
         self.args = args
 
     def eval(self):
