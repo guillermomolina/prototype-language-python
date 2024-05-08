@@ -139,6 +139,6 @@ dmypy.json
 cython_debug/
 
 # Visual Studio
-.vscode/
+# .vscode/
 
 .antlr/

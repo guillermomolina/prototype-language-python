@@ -1,0 +1,37 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "antlr-debug",
+            "request": "launch",
+            "name": "Antlr Debugger: File",
+            "input": "${file}",
+            "grammar": "antlr4/PrototypeParser.g4",
+            "startRule": "program",
+            "printParseTree": false,
+            "visualParseTree": true
+        },
+        {
+            "type": "antlr-debug",
+            "request": "launch",
+            "name": "Antlr Debugger: if.js",
+            "input": "prototype/tests/if.js" ,
+            "grammar": "antlr4/PrototypeParser.g4",
+            "startRule": "program",
+            "printParseTree": false,
+            "visualParseTree": true
+        },        {
+            "name": "Python Debugger: if.js",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "prototype.prototypeapp",
+            "args": [ 
+                "--cst", 
+                "prototype/tests/if.js"
+            ]
+        }
+    ]
+}
