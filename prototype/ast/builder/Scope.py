@@ -1,25 +1,42 @@
+from prototype.runtime.objects import Object
+
+
 class Scope:
     CURRENT = None
 
-    def __init__(self, outerScope=None, arguments=[], inLoop = False):
-        self.outerScope = outerScope
-        self.inLoop = inLoop
-        self.arguments = arguments
-        self.variables = []
-        self.sharedVariables = []
-
     @classmethod
-    def enterFunction(cls, arguments=[]):   
-        cls.CURRENT = Scope(cls.CURRENT, ['this'] + arguments)
-
-    @classmethod
-    def enterArrowFunction(cls, arguments=[]):
-        cls.CURRENT = Scope(cls.CURRENT, arguments)
-
-    @classmethod
-    def enterLoop(cls):
-        cls.CURRENT = Scope(cls.CURRENT, inLoop=True)
+    def enter(cls):   
+        Scope.CURRENT = cls(Scope.CURRENT)
     
     @classmethod
     def leave(cls):
-        cls.CURRENT = cls.CURRENT.outerScope
+        Scope.CURRENT = Scope.CURRENT.outerScope
+
+    def __init__(self, outerScope):
+        self.outerScope = outerScope
+        self.variables = []
+   
+    def addVariable(self, id, forceLocal=False):
+        if id in self.variables:
+            return
+        if hasattr(Object.GLOBALS, id):
+            return
+        self.variables.append(id)
+
+class LoopScope(Scope):
+    pass
+
+class FunctionScope(Scope):
+
+    @classmethod
+    def enter(cls, parameters=[]):   
+        Scope.CURRENT = cls(Scope.CURRENT, parameters)
+
+    def __init__(self, outerScope=None, parameters=[]):
+        super().__init__(outerScope)
+        self.parameters = parameters
+
+class ArrowFunctionScope(FunctionScope):
+
+    pass
+

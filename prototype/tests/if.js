@@ -1,10 +1,11 @@
-true.if = function (trueBlock, falseBlock) {
+/*true.if = function (trueBlock, falseBlock) {
     return trueBlock()
 }
 
 true.ifTrue = function (trueBlock) {
     return trueBlock()
 }
+
 true.ifFalse = function (falseBlock) {
     return null
 }
@@ -19,10 +20,10 @@ false.ifTrue = function (trueBlock) {
 }
 
 false.ifFalse = function (falseBlock) {
-    return null
+    return falseBlock()
 }
 
 // a = 5
 // (0 < 5).if(() => "true".print(), () => "false".print() )
-false.ifFalse.print()
+true.if.print()*/
 Object.print()

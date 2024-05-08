@@ -3,6 +3,7 @@ from prototype import runtime
 
 class Object:
     PROTOTYPE = None
+    GLOBALS = None
 
     @classmethod
     def initialize(cls):
@@ -46,17 +47,15 @@ class Object:
 class Function(Object):
     PROTOTYPE = None
 
-    def __init__(self, function, arguments=None, variables=None, sharedVariables=None, source_code=None, prototype=None, properties=None):
+    def __init__(self, function, parameters=[], source_code=None, prototype=None, properties=None):
         super().__init__(prototype or Function.PROTOTYPE, properties)
         self.function = function
-        self.arguments = arguments or []
-        self.variables = variables or []
-        self.sharedVariables = sharedVariables or []
+        self.parameters = parameters
         self.source_code = source_code
 
     def __str__(self):
         string = 'function ('
-        string += ', '.join(self.arguments)
+        string += ', '.join(self.parameters)
         string += ') {'
         string += self.source_code or ' /* native code */ '
         string += '}'
@@ -66,7 +65,7 @@ class Function(Object):
 class ArrowFunction(Function):
     def __str__(self):
         string = '('
-        string += ', '.join(self.arguments)
+        string += ', '.join(self.parameters)
         string += ') => {'
         string += self.source_code or ' /* native code */ '
         string += '}'
@@ -76,14 +75,14 @@ class ArrowFunction(Function):
 class Prototype(Function):
     PROTOTYPE = None
 
-    def __init__(self, name, constructor=None, arguments=None, variables=None, sharedVariables=None, source_code=None, prototype=None, properties=None):
-        super().__init__(constructor or self.constructor, arguments, variables, sharedVariables, source_code,
+    def __init__(self, name, constructor=None, parameters=[], source_code=None, prototype=None, properties=None):
+        super().__init__(constructor or self.constructor, parameters, source_code,
                          prototype or Prototype.PROTOTYPE, properties)
         self.name = name
 
     def __str__(self):
         string = self.name + '('
-        string += ', '.join(self.arguments)
+        string += ', '.join(self.parameters)
         string += ') {'
         string += self.source_code or ' /* native code */ '
         string += '}'
@@ -147,25 +146,8 @@ class Null(Object):
         super().__init__(Null.PROTOTYPE)
 
     def __str__(self):
-        return 'null'  
+        return 'null'
 
-class Scope(Object):
-    PROTOTYPE = None
-    GLOBAL = None
-
-    def __init__(self, outerScope):
-        super().__init__(Scope.PROTOTYPE)
-        self.outerScope = outerScope
-
-
-    def __getitem__(self, item):
-        try:
-            return self.properties.__getitem__(item)
-        except KeyError:
-            if self.outerScope is not None:
-                return self.outerScope[item]
-
-            raise runtime.Errors.NameError("name %s is not defined in scope" % item)
 
 Object.PROTOTYPE = Prototype('Object', Function(Object))
 Function.PROTOTYPE = Prototype('Function', Function(Function))
@@ -178,18 +160,17 @@ Boolean.PROTOTYPE = Prototype('Boolean', Function(Boolean))
 Boolean.FALSE = Boolean(False)
 Boolean.TRUE = Boolean(True)
 Null.PROTOTYPE = Prototype('Null', Function(Null))
-Null.INSTANCE= Null()
+Null.INSTANCE = Null()
 
-
-Scope.PROTOTYPE = Prototype('Scope', Function(Scope))
-Scope.GLOBAL= Scope(None)
-Scope.GLOBAL.properties['Object'] = Object.PROTOTYPE
-Scope.GLOBAL.properties['Array'] = Array.PROTOTYPE
-Scope.GLOBAL.properties['Function'] = Function.PROTOTYPE
-Scope.GLOBAL.properties['Prototype'] = Function.PROTOTYPE
-Scope.GLOBAL.properties['String'] = Prototype.PROTOTYPE
-Scope.GLOBAL.properties['Number'] = Number.PROTOTYPE
-Scope.GLOBAL.properties['Boolean'] = Boolean.PROTOTYPE
-Scope.GLOBAL.properties['Null'] = Null.PROTOTYPE
 
 Object.PROTOTYPE.properties['print'] = Function(print)
+
+Object.GLOBALS = Object()
+Object.GLOBALS.properties['Object'] = Object.PROTOTYPE
+Object.GLOBALS.properties['Array'] = Array.PROTOTYPE
+Object.GLOBALS.properties['Function'] = Function.PROTOTYPE
+Object.GLOBALS.properties['Prototype'] = Function.PROTOTYPE
+Object.GLOBALS.properties['String'] = Prototype.PROTOTYPE
+Object.GLOBALS.properties['Number'] = Number.PROTOTYPE
+Object.GLOBALS.properties['Boolean'] = Boolean.PROTOTYPE
+Object.GLOBALS.properties['Null'] = Null.PROTOTYPE

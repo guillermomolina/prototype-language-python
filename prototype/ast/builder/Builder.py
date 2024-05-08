@@ -27,7 +27,7 @@ class CustomVisitor(StmtVisitorMixin, ExprVisitorMixin, PrototypeParserVisitor):
     # Visit parse tree produced from a file
     #
     def visitProgram(self, ctx:PrototypeParser.ProgramContext):
-        Scope.enterArrowFunction()
+        Scope.enter()
         
         statements = []
 

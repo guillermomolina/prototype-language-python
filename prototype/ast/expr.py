@@ -1,9 +1,9 @@
 from enum import Enum
 import operator
 
-from prototype.ast.base import ExpressionNode, MemoryContext, ControlFlowMark
+from prototype.ast.base import ExpressionNode, MemoryContextAccessType, ControlFlowMark
 from prototype import runtime
-from prototype.runtime.memory import Context
+from prototype.runtime.memory import ClosureMemoryContext, MemoryContext
 from prototype.runtime.objects import Array, ArrowFunction, Boolean, Function, Null, Object
 
 
@@ -26,30 +26,27 @@ from prototype.runtime.objects import Array, ArrowFunction, Boolean, Function, N
 # Implementing modules will require providing each @NameNode node an ability to get a proper context.
 """
 class AnonymousFunctionDefNode(ExpressionNode):
-    def __init__(self, args:list, body:list, source_code:str):
+    def __init__(self, scope:any, body:list, source_code:str):
         super().__init__()
-        self.args = args
+        self.scope = scope
         self.body = body
         self.source_code = source_code
 
-    def getContext(self) -> runtime.memory.Context:
-        return Context.current
-
     def eval(self) -> None:
-
-        declarationContext = self.getContext()
-
         def container(rcvr, *args):
-            previousContext = Context.push(declarationContext, rcvr)
-            context = Context.current
+            slots = dict.fromkeys(self.scope.variables)
+            slots["this"] = rcvr
 
             if len(args) != len(self.args):
                 message = "function() takes %d positional arguments but %d were given" % \
                           (len(self.args), len(args))
                 raise runtime.Errors.TypeError(message)
 
-            for pair in zip (self.args, args):
-                context.set(name=pair[0], value=pair[1])
+            for pair in zip(self.scope.args, args):
+                slots.set(name=pair[0], value=pair[1])
+
+            context = MemoryContext(slots)
+            MemoryContext.push(context)
 
             returnValue = rcvr
 
@@ -61,36 +58,34 @@ class AnonymousFunctionDefNode(ExpressionNode):
                             returnValue = res.toEval.eval()
                         break
 
-            Context.pop(previousContext)
+            MemoryContext.pop()
             return returnValue
         
-        return Function(container, self.args, self.vars, self.sharedVars, self.source_code)
+        return Function(container, self.scope, self.source_code)
 
 class ArrowFunctionDefNode(ExpressionNode):
-    def __init__(self, args:list, body:list, source_code:str):
+    def __init__(self, scope:any, body:list, source_code:str):
         super().__init__()
-        self.args = args
+        self.scope = scope
         self.body = body
         self.source_code = source_code
 
-    def getContext(self) -> runtime.memory.Context:
-        return Context.current
-
     def eval(self) -> None:
-
-        declarationContext = self.getContext()
+        declarationContext = MemoryContext.getFunctionContext()
 
         def container(*args):
-            previousContext = Context.push(declarationContext)
-            context = Context.current
+            slots = dict.fromkeys(self.scope.variables)
 
             if len(args) != len(self.args):
                 message = "function() takes %d positional arguments but %d were given" % \
                           (len(self.args), len(args))
                 raise runtime.Errors.TypeError(message)
 
-            for pair in zip (self.args, args):
-                context.set(name=pair[0], value=pair[1])
+            for pair in zip(self.scope.args, args):
+                slots.set(name=pair[0], value=pair[1])
+
+            context = ClosureMemoryContext(declarationContext, slots)
+            MemoryContext.push(context)
 
             returnValue = None
 
@@ -102,10 +97,10 @@ class ArrowFunctionDefNode(ExpressionNode):
                             returnValue = res.toEval.eval()
                         break
 
-            Context.pop(previousContext)
+            MemoryContext.pop()
             return returnValue
         
-        return ArrowFunction(container, self.args, self.vars, self.sharedVars, self.source_code)
+        return ArrowFunction(container, self.scope, self.source_code)
 
 
 """
@@ -270,26 +265,26 @@ class NameConstantNode(ExpressionNode):
 """
 # A variable name.
 #     @id holds the name as a string
-#     @ctx is one of the following types: @Load / @Store / @Del
+#     @accessType is one of the following types: @Load / @Store / @Del
 """
 class NameNode(ExpressionNode):
 
-    def __init__(self, id, ctx:MemoryContext):
+    def __init__(self, id, accessType:MemoryContextAccessType):
         super().__init__()
         self.id = id
-        self.ctx = ctx
+        self.accessType = accessType
 
     def eval(self):
-        if self.ctx == MemoryContext.Load:
+        if self.accessType == MemoryContextAccessType.Load:
             return self.getContext().get(name=self.id)
-        elif self.ctx == MemoryContext.Store:
+        elif self.accessType == MemoryContextAccessType.Store:
             return self.id
         else:
             raise NotImplementedError()
 
     def getContext(self):
         # Problem: we're very loosely coupled.
-        return Context.current
+        return MemoryContext.CURRENT
 
 """
 # A variable name.
@@ -306,7 +301,7 @@ class ThisExprNode(ExpressionNode):
 
     def getContext(self):
         # Problem: we're very loosely coupled.
-        return Context.current
+        return MemoryContext.CURRENT
 
 """
 # Function call
@@ -407,14 +402,14 @@ class ObjectContainerNode(CollectionContainerNode):
 
     def eval(self):
         result = Object()
-        previousContext = Context.push(Context.current, result)
+        previousContext = MemoryContext.push(MemoryContext.CURRENT, result)
 
         for key in self.value.keys():
             newKey = key.eval()
             newVal = self.value[key].eval()
             result.properties[newKey] = newVal
 
-        Context.pop(previousContext)
+        MemoryContext.pop(previousContext)
         return result
 
 

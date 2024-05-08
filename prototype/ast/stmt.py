@@ -1,11 +1,11 @@
 import copy
-from prototype.ast.base import StatementNode, ExpressionNode, MemoryContext, ControlFlowMark
+from prototype.ast.base import StatementNode, ExpressionNode, MemoryContextAccessType, ControlFlowMark
 from prototype.ast.expr import AddOpNode, SubOpNode, MultOpNode, DivOpNode, ModOpNode, LShiftOpNode, RShiftOpNode, BinOpNode, UnaryOpNode, CompareNode
 from prototype.ast.expr import BitAndOpNode, BitOrOpNode, BitXorOpNode, NameNode, CallExprNode
 
 from prototype import ast
 from prototype import runtime
-from prototype.runtime.memory import Context
+from prototype.runtime.memory import MemoryContext
 from prototype.runtime.objects import Array, Boolean, Null, Number, Object, String
 
 """
@@ -33,8 +33,8 @@ class FunctionDef(StatementNode):
         self.args = args
         self.body = body
 
-    def getContext(self) -> runtime.memory.Context:
-        return Context.current
+    def getContext(self) -> runtime.memory.MemoryContext:
+        return MemoryContext.CURRENT
 
     def eval(self) -> None:
         raise NotImplementedError()
@@ -42,9 +42,9 @@ class FunctionDef(StatementNode):
         declarationContext = self.getContext()
 
         def container(*args):
-            context = runtime.memory.Context(outerContext=declarationContext)
-            previousContext = Context.current
-            Context.current = context
+            context = runtime.memory.MemoryContext(outerContext=declarationContext)
+            previousContext = MemoryContext.CURRENT
+            MemoryContext.CURRENT = context
 
             if len(args) != len(self.args):
                 message = "%s() takes %d positional arguments but %d were given" % \
@@ -64,7 +64,7 @@ class FunctionDef(StatementNode):
                             returnValue = res.toEval.eval()
                         break
 
-            Context.current = previousContext
+            MemoryContext.CURRENT = previousContext
             return returnValue
 
         # Finally, write the function container to the memory.
@@ -175,11 +175,11 @@ class ForInStmt(StatementNode):
         result = []
 
         # Check if target name exists. If no - create it.
-        #Context.current.get(self)
+        #MemoryContext.CURRENT.get(self)
 
         for x in self.iter.eval():
             # Set target to the current value
-            Context.current.set(self.target.id, x)
+            MemoryContext.CURRENT.set(self.target.id, x)
 
             shouldBreak = False
             for stmt in self.body:
@@ -234,7 +234,7 @@ class AssignStmt(StatementNode):
         elif isinstance(lValue, PropertyNode.AssignWrapper):
             lValue.object[lValue.property] = rValue
         else:
-            Context.current.set(name=lValue, value=rValue)
+            MemoryContext.CURRENT.set(name=lValue, value=rValue)
 
         return rValue
 
@@ -257,8 +257,8 @@ class AugAssignStmt(AssignStmt):
         nameNodeLoad = copy.copy(name)
         nameNodeStore = copy.copy(name)
 
-        nameNodeLoad.ctx = MemoryContext.Load
-        nameNodeStore.ctx = MemoryContext.Store
+        nameNodeLoad.accessType = MemoryContextAccessType.Load
+        nameNodeStore.accessType = MemoryContextAccessType.Store
 
         binOp = AugAssignStmt.opTable[op](left=nameNodeLoad, right=value)
         super().__init__(target=nameNodeStore, value=binOp)
@@ -269,7 +269,7 @@ class AugAssignStmt(AssignStmt):
 # PropertyNode access (e.g., name.attribute)
 #   @value is a node, typically a NameNode.
 #   @attr is a bare string giving the name of the attribute
-#   @ctx is Load, Store or Del according to how the attribute is acted on.
+#   @accessType is Load, Store or Del according to how the attribute is acted on.
 """
 class PropertyNode(StatementNode):
 
@@ -278,11 +278,11 @@ class PropertyNode(StatementNode):
             self.object = object
             self.property = property
 
-    def __init__(self, value, attr, ctx):
+    def __init__(self, value, attr, accessType):
         super().__init__()
         self.value = value
         self.attr = attr
-        self.ctx = ctx
+        self.accessType = accessType
 
     def eval(self):
         value = self.value.eval()
@@ -301,9 +301,9 @@ class PropertyNode(StatementNode):
             value = Array.PROTOTYPE
         elif isinstance(value, dict):
             value = Object.PROTOTYPE
-        if self.ctx == MemoryContext.Load:
+        if self.accessType == MemoryContextAccessType.Load:
             return value[self.attr]
-        elif self.ctx == MemoryContext.Store:
+        elif self.accessType == MemoryContextAccessType.Store:
             return PropertyNode.AssignWrapper(value, self.attr)
         else:
             raise NotImplementedError()
@@ -312,7 +312,7 @@ class PropertyNode(StatementNode):
 A subscript, such as l[1].
     @value is the object, often a NameNode.
     @slice is one of @IndexNode or @SliceNode.
-    @ctx is Load, Store or Del according to what it does with the subscript.
+    @accessType is Load, Store or Del according to what it does with the subscript.
 """
 class SubscriptNode(StatementNode):
 
@@ -321,11 +321,11 @@ class SubscriptNode(StatementNode):
             self.collection = collection
             self.index = index
 
-    def __init__(self, value, slice, ctx):
+    def __init__(self, value, slice, accessType):
         super().__init__()
         self.value = value
         self.slice = slice
-        self.ctx = ctx
+        self.accessType = accessType
 
     def eval(self):
         lValue = self.value.eval()
@@ -334,9 +334,9 @@ class SubscriptNode(StatementNode):
             if isinstance(self.slice, IndexNode):
                 index = self.slice.eval()
 
-                if self.ctx == MemoryContext.Load:
+                if self.accessType == MemoryContextAccessType.Load:
                     return lValue[index]
-                elif self.ctx == MemoryContext.Store:
+                elif self.accessType == MemoryContextAccessType.Store:
                     return SubscriptNode.AssignWrapper(lValue, index)
                 else:
                     raise NotImplementedError
@@ -344,7 +344,7 @@ class SubscriptNode(StatementNode):
             elif isinstance(self.slice, SliceNode):
                 lower, upper = self.slice.eval()
 
-                if self.ctx == MemoryContext.Load:
+                if self.accessType == MemoryContextAccessType.Load:
                     return lValue[lower:upper]
                 else:
                     raise NotImplementedError("Writing to slices & deleting elements is not supported")

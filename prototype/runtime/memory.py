@@ -1,39 +1,52 @@
 from prototype import runtime
-from prototype.runtime.objects import Scope
+from prototype.runtime.objects import Object
 
-
-class Context:
-    current = None
-
-    @classmethod
-    def push(cls, previousContext, currentobject):
-        context = cls(previousContext, currentobject)
-        olderContext = cls.current
-        cls.current = context
-        return olderContext
+class MemoryContext:
+    CURRENT = None
 
     @classmethod
-    def pop(cls, previousContext):
-        olderContext = cls.current
-        cls.current = previousContext
-        return olderContext
+    def getFunctionContext(cls):
+        context = MemoryContext.CURRENT
+        while context is not None:
+            if context is MemoryContext:
+                return context
+            context = context.previousContext
+        raise runtime.Errors.MemoryError("MemoryContext stack is not yet initialized")
 
-    def __init__(self, previousContext, currentobject):
-        self.previousContext = previousContext
-        self.currentobject = currentobject
+    @classmethod
+    def push(cls, context):
+        context.previousContext = MemoryContext.CURRENT
+        MemoryContext.CURRENT = context
+
+    @classmethod
+    def pop(cls, context=None):
+        if context is not None:
+            raise NotImplementedError()
+        MemoryContext.CURRENT = MemoryContext.CURRENT.previousContext
+
+    def __init__(self, slots):
+        self.previousContext = None
+        self.slots = slots
 
     def get(self, name):
-        try:
-            # Search in the current context first
-            return self.currentobject[name]
-        except KeyError:
-            if self.previousContext is not None:
-                return self.previousContext.get(name)
+        if name in self.slots:
+            return self.slots[name]
 
-            raise runtime.Errors.NameError("name %s is not defined" % name)
+        if self.previousContext is None and name in Object.GLOBALS:
+            return Object.GLOBALS[name]
+
+        raise runtime.Errors.NameError("name %s is not defined in context" % name)
 
     def set(self, name, value):
-        self.currentobject[name] = value
+        self.slots[name] = value
 
+class ClosureMemoryContext(MemoryContext):
+    def __init__(self, outerContext, slots):
+        super().__init__(slots)
+        self.outerContext = outerContext
 
-Context.current = Context(None, Scope.GLOBAL)
+    def get(self, name):
+        raise NotImplementedError()
+
+    def set(self, name, value):
+        raise NotImplementedError()

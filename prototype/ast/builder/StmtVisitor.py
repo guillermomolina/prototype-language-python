@@ -1,5 +1,5 @@
 from prototype.ast.builder.ExprVisitor import getParameters
-from prototype.ast.builder.Scope import Scope
+from prototype.ast.builder.Scope import FunctionScope, Scope
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 
@@ -117,11 +117,17 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
     def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
         name = ctx.identifier().getText()
+        Scope.CURRENT.addVariable(name)
         params = getParameters(ctx.formalParameterList())
-        Scope.enterFunction(params)
-        body = self.visit(ctx.functionBody())
+        scope = FunctionScope.enter(params)
+        body_ctx = ctx.functionBody()
+        body = self.visit(body_ctx)
         Scope.leave()
-        return ast.stmt.FunctionDef(name=name, args=params, body=body)
+        source_code = body_ctx.start.source[1].strdata
+        start_index = body_ctx.start.start + 1
+        end_index = body_ctx.stop.stop
+        source_code = source_code[start_index:end_index]
+        return ast.stmt.FunctionDef(name=name, scope=scope, body=body, source_code=source_code)
 
     def visitFunctionBody(self, ctx:PrototypeParser.FunctionBodyContext):
         statements = []

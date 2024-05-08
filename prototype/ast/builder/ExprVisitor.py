@@ -1,8 +1,9 @@
+from prototype.ast.builder.Scope import ArrowFunctionScope, Scope
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.parser.PrototypeParserVisitor import PrototypeParserVisitor
 
 from prototype import ast
-from prototype.ast.base import MemoryContext
+from prototype.ast.base import MemoryContextAccessType
 
 
 def getParameters(param_ctx:PrototypeParser.FormalParameterArgContext):
@@ -139,13 +140,16 @@ class ExprVisitorMixin(PrototypeParserVisitor):
 
     def visitAnonymousFunctionDecl(self, ctx:PrototypeParser.AnonymousFunctionDeclContext):
         params = getParameters(ctx.formalParameterList())
+        ArrowFunctionScope.enter(params)
+        scope = Scope.CURRENT
         body_ctx = ctx.functionBody()
         body = self.visit(body_ctx)
         source_code = body_ctx.start.source[1].strdata
         start_index = body_ctx.start.start + 1
         end_index = body_ctx.stop.stop
         source_code = source_code[start_index:end_index]
-        return ast.expr.AnonymousFunctionDefNode(args=params, body=body, source_code=source_code)
+        Scope.leave()
+        return ast.expr.AnonymousFunctionDefNode(scope=scope, body=body, source_code=source_code)
 
     def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
         raise NotImplementedError()
@@ -156,28 +160,33 @@ class ExprVisitorMixin(PrototypeParserVisitor):
             params = [self.visit(params_ctx.propertyName())]
         else:
             params = getParameters(params_ctx.formalParameterList())
+        ArrowFunctionScope.enter(params)
+        scope = Scope.CURRENT
         body_ctx = ctx.arrowFunctionBody()
         body = self.visit(body_ctx)
         source_code = body_ctx.start.source[1].strdata
         start_index = body_ctx.start.start + 1
         end_index = body_ctx.stop.stop
         source_code = source_code[start_index:end_index]
-        return ast.expr.ArrowFunctionDefNode(args=params, body=body, source_code=source_code)
+        Scope.leave()
+        return ast.expr.ArrowFunctionDefNode(scope=scope, body=body, source_code=source_code)
    
 
     #
     # NameNode access: Identifier, ArgumentsExpression, SubName
     #
 
-    def nameContextFor(self, parentContext):
+    def getMemoryContextAccessType(self, parentContext):
         if type(parentContext) is PrototypeParser.AssignmentExpressionContext or type(parentContext) is PrototypeParser.AssignmentOperatorExpressionContext:
-            return MemoryContext.Store
+            return MemoryContextAccessType.Store
         else:
-            return MemoryContext.Load
+            return MemoryContextAccessType.Load
 
     def visitIdentifier(self, ctx: PrototypeParser.IdentifierContext):
-        context = self.nameContextFor(ctx.parentCtx.parentCtx)
-        return ast.expr.NameNode(id=ctx.getText(), ctx=context)
+        id=ctx.getText()
+        Scope.CURRENT.addVariable(id)
+        context = self.getMemoryContextAccessType(ctx.parentCtx.parentCtx)
+        return ast.expr.NameNode(id, accessType=context)
 
     def visitArgumentsExpression(self, ctx: PrototypeParser.ArgumentsExpressionContext):
         receiver_ctx =  ctx.singleExpression()
@@ -199,8 +208,8 @@ class ExprVisitorMixin(PrototypeParserVisitor):
     def visitMemberDotExpression(self, ctx: PrototypeParser.MemberDotExpressionContext):
         left = self.visit(ctx.singleExpression())
         attrName = ctx.identifierName().getText()
-        context = self.nameContextFor(ctx.parentCtx)
-        return ast.stmt.PropertyNode(value=left, attr=attrName, ctx=context)
+        context = self.getMemoryContextAccessType(ctx.parentCtx)
+        return ast.stmt.PropertyNode(value=left, attr=attrName, accessType=context)
 
     def visitMemberIndexExpression(self, ctx: PrototypeParser.MemberIndexExpressionContext):
         leftNode = self.visit(ctx.singleExpression())
@@ -208,9 +217,9 @@ class ExprVisitorMixin(PrototypeParserVisitor):
             raise NotImplementedError()
         subscript = ast.stmt.IndexNode(self.visit(ctx.expressionSequence().singleExpression(0)))
 
-        context = self.nameContextFor(ctx)
+        context = self.getMemoryContextAccessType(ctx)
 
-        return ast.stmt.SubscriptNode(value=leftNode, slice=subscript, ctx=context)
+        return ast.stmt.SubscriptNode(value=leftNode, slice=subscript, accessType=context)
 
     #
     # IndexNode and slice operations

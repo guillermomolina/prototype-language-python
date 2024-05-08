@@ -1,5 +1,7 @@
 from enum import Enum
 
+from prototype.runtime.memory import MemoryContext
+
 
 class Node:
     def eval(self):
@@ -14,11 +16,12 @@ class Module(Node):
         self.body = body
 
     def eval(self):
+        MemoryContext.push(MemoryContext({}))
         if type(self.body) is not list:
             self.body.eval()
         for stmt in self.body:
             stmt.eval()
-
+        MemoryContext.pop()
 
 class InteractiveNode(Node):
     def __init__(self, body:list):
@@ -54,7 +57,7 @@ class StatementNode(Node):
 
 
 """ Memory context for names, attributes, indexes, etc. """
-class MemoryContext(Enum):
+class MemoryContextAccessType(Enum):
     Load = 1
     Store = 2
     Del = 3
