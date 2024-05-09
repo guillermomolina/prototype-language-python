@@ -190,4 +190,6 @@ Object.GLOBALS.properties['Prototype'] = Function.PROTOTYPE
 Object.GLOBALS.properties['String'] = Prototype.PROTOTYPE
 Object.GLOBALS.properties['Number'] = Number.PROTOTYPE
 Object.GLOBALS.properties['Boolean'] = Boolean.PROTOTYPE
+Object.GLOBALS.properties['True'] = Boolean.TRUE
+Object.GLOBALS.properties['False'] = Boolean.FALSE
 Object.GLOBALS.properties['Null'] = Null.PROTOTYPE
