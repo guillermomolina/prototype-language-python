@@ -88,6 +88,7 @@ if __name__ == "__main__":
         maintainer_email=AUTHOR_EMAIL,
         packages=find_packages(),
         include_package_data=True,
+        # data_files=[('stdlib', [ "prototype/stdlib/boolean.js" ])],
         zip_safe=False,
         url=PACKAGE_URL,
         license=LICENSE,
@@ -112,5 +113,5 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 3.7',
             'Topic :: Software Development :: Libraries :: Python Modules',
             'Topic :: System :: Operating System',
-        ]
+        ],
     )

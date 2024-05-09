@@ -29,7 +29,7 @@
             "request": "launch",
             "module": "prototype.prototypeapp",
             "args": [ 
-                "--cst", 
+                "--log-level=debug", 
                 "prototype/tests/if.js"
             ]
         }

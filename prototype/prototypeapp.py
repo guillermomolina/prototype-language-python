@@ -1,5 +1,8 @@
-import sys, os, stat
-import argparse, time
+import logging
+from pathlib import Path
+import sys
+import argparse
+import time
 from enum import Enum
 
 import antlr4
@@ -13,6 +16,16 @@ from prototype.parser.CustomLexer import CustomLexer
 from prototype.parser.PrototypeParser import PrototypeParser
 from prototype.shell.shell import InteractiveShell
 
+log = logging.getLogger(__name__)
+
+log_levels = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warn': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL
+}
+
 
 class InputType(Enum):
     File = 1
@@ -21,15 +34,15 @@ class InputType(Enum):
 
 
 parserRuleFor = {
-    InputType.File        : PrototypeParser.program,
-    InputType.SingleInput : PrototypeParser.program,
-    InputType.ExpressionNode  : PrototypeParser.program,
+    InputType.File: PrototypeParser.program,
+    InputType.SingleInput: PrototypeParser.program,
+    InputType.ExpressionNode: PrototypeParser.program,
 }
 
 visitorRuleFor = {
-    InputType.File        : CustomVisitor.visitProgram,
-    InputType.SingleInput : CustomVisitor.visitProgram,
-    InputType.ExpressionNode  : CustomVisitor.visitProgram,
+    InputType.File: CustomVisitor.visitProgram,
+    InputType.SingleInput: CustomVisitor.visitProgram,
+    InputType.ExpressionNode: CustomVisitor.visitProgram,
 }
 
 
@@ -41,7 +54,7 @@ class EvalArguments:
         self.print_timings = print_timings
 
 
-def prototype_eval(sourcecode:str, firstRule=InputType.ExpressionNode, args=None):
+def prototype_eval(sourcecode: str, firstRule=InputType.ExpressionNode, args=None):
     if args is None:
         args = EvalArguments()
 
@@ -123,6 +136,19 @@ def prototype_eval(sourcecode:str, firstRule=InputType.ExpressionNode, args=None
     return 0
 
 
+def import_stdlib():
+    stdlib_path = Path(Path(__file__).parent, 'stdlib')
+    for file in stdlib_path.iterdir():
+        if file.is_file():
+            try:
+                with file.open('r') as f:
+                    log.debug(f"Loading stdlib file: {file.name}")
+                    content = f.read() + '\n'
+                    prototype_eval(content, InputType.File)
+            except FileNotFoundError:
+                log.error(f"Error opening file: {file.name}")
+
+
 def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument('filename', type=str, nargs='?',
@@ -142,15 +168,23 @@ def main():
     argParser.add_argument('-i', dest='force_promt', action='store_true',
                            help='forces a prompt even if stdin does not appear to be a terminal')
     argParser.add_argument('-V', '--version',
-                        help='Print version information and quit',
-                        action='version',
-                        version='%(prog)s version ' + __version__)
+                           help='Print version information and quit',
+                           action='version',
+                           version='%(prog)s version ' + __version__)
+    argParser.add_argument('-l', '--log-level',
+                           help='Set the logging level ("debug"|"info"|"warn"|"error"|"fatal")',
+                           choices=log_levels.keys(),
+                           metavar='LOG_LEVEL',
+                           default='info')
     #
     # Parse arguments
     #
-    argParser.set_defaults(cst=False, parse_tree=False, tokens=False, parse=False, timings=False)
+    argParser.set_defaults(cst=False, parse_tree=False,
+                           tokens=False, parse=False, timings=False)
     args = argParser.parse_args()
+    logging.basicConfig(level=log_levels[args.log_level])
 
+    import_stdlib()
     #
     # Check whether terminal is attached
     #
@@ -172,13 +206,19 @@ def main():
 
         if isatty:
             with open(args.filename) as file_contents:
+                log.debug(f"Loading file: {args.filename}")
                 content = file_contents.read()
         else:
             content = ''.join(sys.stdin.readlines())
 
     content += '\n'
-    retvalue = prototype_eval(content, firstRule, args)
-    exit(retvalue)
+    try:
+        retvalue = prototype_eval(content, firstRule, args)
+        exit(retvalue)
+    except Exception as e:
+        log.error(str(e))
+        exit(-1)
+
 
 if __name__ == '__main__':
     main()
