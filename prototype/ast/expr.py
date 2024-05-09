@@ -1,5 +1,6 @@
 from enum import Enum
 import operator
+import copy
 
 from prototype.ast.base import ExpressionNode, MemoryContextAccessType, ControlFlowMark
 from prototype import runtime
@@ -420,6 +421,178 @@ class SetContainerNode(CollectionContainerNode):
 
     def update(self, right):
         SetContainerNode(self.value.update(right))
+
+
+
+"""
+# PropertyNode access (e.g., name.attribute)
+#   @value is a node, typically a NameNode.
+#   @attr is a bare string giving the name of the attribute
+#   @accessType is Load, Store or Del according to how the attribute is acted on.
+"""
+class PropertyNode(ExpressionNode):
+
+    class AssignWrapper():
+        def __init__(self, object, property):
+            self.object = object
+            self.property = property
+
+    def __init__(self, value, attr, accessType):
+        super().__init__()
+        self.value = value
+        self.attr = attr
+        self.accessType = accessType
+
+    def eval(self):
+        value = Object.fromNative(self.value.eval())
+
+        if self.accessType == MemoryContextAccessType.Load:
+            return value[self.attr]
+        elif self.accessType == MemoryContextAccessType.Store:
+            return PropertyNode.AssignWrapper(value, self.attr)
+        else:
+            raise NotImplementedError()
+
+"""
+A subscript, such as l[1].
+    @value is the object, often a NameNode.
+    @slice is one of @IndexNode or @SliceNode.
+    @accessType is Load, Store or Del according to what it does with the subscript.
+"""
+class SubscriptNode(ExpressionNode):
+
+    class AssignWrapper:
+        def __init__(self, collection, index):
+            self.collection = collection
+            self.index = index
+
+    def __init__(self, value, slice, accessType):
+        super().__init__()
+        self.value = value
+        self.slice = slice
+        self.accessType = accessType
+
+    def eval(self):
+        lValue = self.value.eval()
+
+        try:
+            if isinstance(self.slice, IndexNode):
+                index = self.slice.eval()
+
+                if self.accessType == MemoryContextAccessType.Load:
+                    return lValue[index]
+                elif self.accessType == MemoryContextAccessType.Store:
+                    return SubscriptNode.AssignWrapper(lValue, index)
+                else:
+                    raise NotImplementedError
+
+            elif isinstance(self.slice, SliceNode):
+                lower, upper = self.slice.eval()
+
+                if self.accessType == MemoryContextAccessType.Load:
+                    return lValue[lower:upper]
+                else:
+                    raise NotImplementedError("Writing to slices & deleting elements is not supported")
+
+            else:
+                raise ValueError("Unexpected slice type")
+        except IndexError as e:
+            raise runtime.Errors.IndexError(e)
+        except KeyError as e:
+            raise runtime.Errors.KeyError(e)
+        except TypeError as e:
+            raise runtime.Errors.TypeError(e)
+
+"""
+Simple subscripting with a single value: l[1]
+"""
+class IndexNode(ExpressionNode):
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
+
+    def eval(self):
+        return self.value.eval()
+
+"""
+Regular slicing: l[1:2]
+"""
+class SliceNode(ExpressionNode):
+    def __init__(self, lower, upper, step):
+        super().__init__()
+        self.lower = lower
+        self.upper = upper
+        self.step = step
+
+        if self.step is not None:
+            raise NotImplementedError()
+
+    def eval(self):
+        lower = upper = None
+        if self.lower is not None:
+            lower = self.lower.eval()
+        if self.upper is not None:
+            upper = self.upper.eval()
+        return lower, upper
+
+"""
+# An assignment.
+#   @targets is a list of nodes,
+#   @value is a single node.
+#
+# Multiple nodes in targets represents assigning the same value to each.
+# Unpacking is represented by putting a Tuple or List within targets.
+#
+# Notice, that grammar I've implemented doesn't allow to assign to operators/keywords/literals;
+# Because of this we don't perform check for the type of a target value here.
+"""
+class AssignmentNode(ExpressionNode):
+    def __init__(self, target, value:ExpressionNode):
+        super().__init__()
+        self.target = target
+        self.value = value
+
+    def eval(self) -> None:
+        if isinstance(self.target, CallExprNode):
+            raise runtime.Errors.SyntaxError("can't assign to function call")
+
+        lValue = self.target.eval()
+        rValue = self.value.eval()
+
+        if isinstance(lValue, SubscriptNode.AssignWrapper):
+            lValue.collection[lValue.index] = rValue
+        elif isinstance(lValue, PropertyNode.AssignWrapper):
+            lValue.object[lValue.property] = rValue
+        else:
+            MemoryContext.CURRENT.set(name=lValue, value=rValue)
+
+        return rValue
+
+
+class AugAssignmentNode(AssignmentNode):
+    opTable = {
+        '+=' : AddOpNode,
+        '-=' : SubOpNode,
+        '*=' : MultOpNode,
+        '/=' : DivOpNode,
+        '%=' : ModOpNode,
+        '&=' : BitAndOpNode,
+        '|=' : BitOrOpNode,
+        '^=' : BitXorOpNode,
+        '<<=' : LShiftOpNode,
+        '>>=' : RShiftOpNode,
+    }
+
+    def __init__(self, name, value, op):
+        nameNodeLoad = copy.copy(name)
+        nameNodeStore = copy.copy(name)
+
+        nameNodeLoad.accessType = MemoryContextAccessType.Load
+        nameNodeStore.accessType = MemoryContextAccessType.Store
+
+        binOp = AugAssignmentNode.opTable[op](left=nameNodeLoad, right=value)
+        super().__init__(target=nameNodeStore, value=binOp)
+
 
 """
 # Number literal

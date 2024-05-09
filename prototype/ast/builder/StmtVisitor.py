@@ -115,20 +115,6 @@ class StmtVisitorMixin(PrototypeParserVisitor):
 
         # return ast.stmt.ForStmt(target=expr, iter=test, body=suite)
 
-    def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
-        name = ctx.identifier().getText()
-        Scope.CURRENT.addVariable(name)
-        params = getParameters(ctx.formalParameterList())
-        scope = FunctionScope.enter(params)
-        body_ctx = ctx.functionBody()
-        body = self.visit(body_ctx)
-        Scope.leave()
-        source_code = body_ctx.start.source[1].strdata
-        start_index = body_ctx.start.start + 1
-        end_index = body_ctx.stop.stop
-        source_code = source_code[start_index:end_index]
-        return ast.stmt.FunctionDef(name=name, scope=scope, body=body, source_code=source_code)
-
     def visitFunctionBody(self, ctx:PrototypeParser.FunctionBodyContext):
         statements = []
 

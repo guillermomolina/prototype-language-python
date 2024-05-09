@@ -54,9 +54,9 @@ class EvalArguments:
         self.print_timings = print_timings
 
 
-def prototype_eval(sourcecode: str, firstRule=InputType.ExpressionNode, args=None):
-    if args is None:
-        args = EvalArguments()
+def prototype_eval(sourcecode: str, firstRule=InputType.ExpressionNode, options=None):
+    if options is None:
+        options = EvalArguments()
 
     totalTime = time.time()
     input_stream = antlr4.InputStream(sourcecode)
@@ -84,11 +84,11 @@ def prototype_eval(sourcecode: str, firstRule=InputType.ExpressionNode, args=Non
         return -1
 
     # Print parse trees if need (full or flattened)
-    if args.parse_tree:
+    if options.parse_tree:
         parseTreeString = Trees.toStringTree(parse_tree, recog=parser)
         print(parseTreeString)
 
-    if args.cst:
+    if options.cst:
         cst = CstFiltered(tree=parse_tree)
         print(cst)
 
@@ -103,7 +103,7 @@ def prototype_eval(sourcecode: str, firstRule=InputType.ExpressionNode, args=Non
     if ast is None:
         return -1
 
-    if args.parse_only:
+    if options.parse_only:
         return 0
 
     # Evaluate the Node we've built
@@ -118,7 +118,7 @@ def prototype_eval(sourcecode: str, firstRule=InputType.ExpressionNode, args=Non
 
     totalTime = time.time() - totalTime
 
-    if args.print_timings:
+    if options.print_timings:
         timings = [
             ('Parsing',         parseTime),
             ('Building an Node', astBuildTime),
@@ -181,8 +181,8 @@ def main():
     #
     argParser.set_defaults(cst=False, parse_tree=False,
                            tokens=False, parse=False, timings=False)
-    args = argParser.parse_args()
-    logging.basicConfig(level=log_levels[args.log_level])
+    options = argParser.parse_args()
+    logging.basicConfig(level=log_levels[options.log_level])
 
     import_stdlib()
     #
@@ -190,30 +190,30 @@ def main():
     #
     isatty = True if sys.stdin.isatty() else False
 
-    if args.filename is None and (isatty or args.force_promt) and not args.eval_input:
-        shell = InteractiveShell(args)
+    if options.filename is None and (isatty or options.force_promt) and not options.eval_input:
+        shell = InteractiveShell(options)
 
-        if not args.ignore_greeting:
+        if not options.ignore_greeting:
             shell.print_greeting()
 
         shell.loop()
 
-    if args.eval_input is not None:
+    if options.eval_input is not None:
         firstRule = InputType.SingleInput
-        content = args.eval_input
+        content = options.eval_input
     else:
         firstRule = InputType.File
 
         if isatty:
-            with open(args.filename) as file_contents:
-                log.debug(f"Loading file: {args.filename}")
+            with open(options.filename) as file_contents:
+                log.debug(f"Loading file: {options.filename}")
                 content = file_contents.read()
         else:
             content = ''.join(sys.stdin.readlines())
 
     content += '\n'
     try:
-        retvalue = prototype_eval(content, firstRule, args)
+        retvalue = prototype_eval(content, firstRule, options)
         exit(retvalue)
     except Exception as e:
         log.error(str(e))

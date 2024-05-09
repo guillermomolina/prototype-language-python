@@ -17,20 +17,20 @@
         {
             "type": "antlr-debug",
             "request": "launch",
-            "name": "Antlr Debugger: if.js",
-            "input": "prototype/tests/if.js" ,
+            "name": "Antlr Debugger: fibo1.js",
+            "input": "prototype/tests/fibo1.js" ,
             "grammar": "antlr4/PrototypeParser.g4",
             "startRule": "program",
             "printParseTree": false,
             "visualParseTree": true
         },        {
-            "name": "Python Debugger: if.js",
+            "name": "Python Debugger: fibo1.js",
             "type": "debugpy",
             "request": "launch",
             "module": "prototype.prototypeapp",
             "args": [ 
                 "--log-level=debug", 
-                "prototype/tests/if.js"
+                "prototype/tests/fibo1.js"
             ]
         }
     ]

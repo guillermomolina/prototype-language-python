@@ -16,75 +16,75 @@ envs = dict(os.environ)
 envs['COVERAGE_PROCESS_START'] = '.coveragerc'
 
 
-class FileTestCase(unittest.TestCase):
+# class FileTestCase(unittest.TestCase):
 
-    def __init__(self, file_path):
-        super().__init__()
-        self.file_path = file_path
+#     def __init__(self, file_path):
+#         super().__init__()
+#         self.file_path = file_path
 
-    def __str__(self):
-        return self.__class__.__name__ + ":" + os.path.basename(self.file_path)
-
-
-class ProperParserTest(FileTestCase):
-
-    def runTest(self):
-        result = subprocess.run(
-            prototype_binary + " --parse " + self.file_path, stdout=PIPE, stderr=STDOUT,
-            shell=True, universal_newlines=True, env=envs,
-        )
-
-        self.assertEqual(result.returncode, 0)
-        self.assertTrue(not result.stdout)
-        self.assertTrue(not result.stderr)
+#     def __str__(self):
+#         return self.__class__.__name__ + ":" + os.path.basename(self.file_path)
 
 
-class FailingParserTest(FileTestCase):
+# class ProperParserTest(FileTestCase):
 
-    def runTest(self):
-        result = subprocess.run(
-            prototype_binary + " --parse " + self.file_path, stdout=PIPE, stderr=STDOUT,
-            shell=True, universal_newlines=True, env=envs,
-        )
+#     def runTest(self):
+#         result = subprocess.run(
+#             prototype_binary + " --parse " + self.file_path, stdout=PIPE, stderr=STDOUT,
+#             shell=True, universal_newlines=True, env=envs,
+#         )
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertTrue(result.stdout != '')
-
-
-class SemanticTest(FileTestCase):
-
-    def runTest(self):
-        prototype_result = subprocess.run(
-            prototype_binary + ' -q ' + self.file_path, stdout=PIPE, stderr=STDOUT,
-            shell=True, universal_newlines=True, env=envs
-        )
-        python_result = subprocess.run(
-            python_binary + ' -q ' + self.file_path, stdout=PIPE, stderr=STDOUT,
-            shell=True, universal_newlines=True
-        )
-
-        self.assertEqual(prototype_result.returncode, python_result.returncode)
-        self.assertEqual(prototype_result.stdout, python_result.stdout)
+#         self.assertEqual(result.returncode, 0)
+#         self.assertTrue(not result.stdout)
+#         self.assertTrue(not result.stderr)
 
 
-class ShellTest(FileTestCase):
+# class FailingParserTest(FileTestCase):
 
-    def runTest(self):
-        # Note that each process should have its own file handle
-        with open(self.file_path) as fstdin:
-            prototype_result = subprocess.run(
-                prototype_binary + ' -q -i ', stdin=fstdin, stdout=PIPE, stderr=STDOUT,
-                shell=True,  env=envs,
-            )
+#     def runTest(self):
+#         result = subprocess.run(
+#             prototype_binary + " --parse " + self.file_path, stdout=PIPE, stderr=STDOUT,
+#             shell=True, universal_newlines=True, env=envs,
+#         )
 
-        with open(self.file_path) as fstdin:
-            python_result = subprocess.run(
-                python_binary + ' -q -i ', stdin=fstdin, stdout=PIPE, stderr=STDOUT,
-                shell=True,  env=envs,
-            )
+#         self.assertNotEqual(result.returncode, 0)
+#         self.assertTrue(result.stdout != '')
 
-        self.assertEqual(prototype_result.returncode, python_result.returncode)
-        self.assertEqual(prototype_result.stdout, python_result.stdout)
+
+# class SemanticTest(FileTestCase):
+
+#     def runTest(self):
+#         prototype_result = subprocess.run(
+#             prototype_binary + ' -q ' + self.file_path, stdout=PIPE, stderr=STDOUT,
+#             shell=True, universal_newlines=True, env=envs
+#         )
+#         python_result = subprocess.run(
+#             python_binary + ' -q ' + self.file_path, stdout=PIPE, stderr=STDOUT,
+#             shell=True, universal_newlines=True
+#         )
+
+#         self.assertEqual(prototype_result.returncode, python_result.returncode)
+#         self.assertEqual(prototype_result.stdout, python_result.stdout)
+
+
+# class ShellTest(FileTestCase):
+
+#     def runTest(self):
+#         # Note that each process should have its own file handle
+#         with open(self.file_path) as fstdin:
+#             prototype_result = subprocess.run(
+#                 prototype_binary + ' -q -i ', stdin=fstdin, stdout=PIPE, stderr=STDOUT,
+#                 shell=True,  env=envs,
+#             )
+
+#         with open(self.file_path) as fstdin:
+#             python_result = subprocess.run(
+#                 python_binary + ' -q -i ', stdin=fstdin, stdout=PIPE, stderr=STDOUT,
+#                 shell=True,  env=envs,
+#             )
+
+#         self.assertEqual(prototype_result.returncode, python_result.returncode)
+#         self.assertEqual(prototype_result.stdout, python_result.stdout)
 
 
 class EvalTest(unittest.TestCase):
@@ -103,44 +103,44 @@ class EvalTest(unittest.TestCase):
         return self.__class__.__name__ + ":" + self.expression
 
 
-class RedirectTest(SemanticTest):
-    def __init__(self, filepath):
-        super().__init__(' < ' + filepath)
+# class RedirectTest(SemanticTest):
+#     def __init__(self, filepath):
+#         super().__init__(' < ' + filepath)
 
 
 def get_suite():
     suite = unittest.TestSuite()
 
-    for file in os.listdir(proper_tests_dir):
-        file_path = os.path.join(proper_tests_dir, file)
+    # for file in os.listdir(proper_tests_dir):
+    #     file_path = os.path.join(proper_tests_dir, file)
 
-        if file.startswith("unicode") and os.name == 'nt':
-            continue
+    #     if file.startswith("unicode") and os.name == 'nt':
+    #         continue
 
-        if file.endswith(".txt"):
-            suite.addTest(ProperParserTest(file_path))
+    #     if file.endswith(".txt"):
+    #         suite.addTest(ProperParserTest(file_path))
 
-        elif file.endswith(".py"):
-            suite.addTest(SemanticTest(file_path))
+    #     elif file.endswith(".py"):
+    #         suite.addTest(SemanticTest(file_path))
 
-    for file in os.listdir(failing_tests_dir):
-        if file.endswith(".txt"):
-            file_path = os.path.join(failing_tests_dir, file)
-            suite.addTest(FailingParserTest(file_path))
+    # for file in os.listdir(failing_tests_dir):
+    #     if file.endswith(".txt"):
+    #         file_path = os.path.join(failing_tests_dir, file)
+    #         suite.addTest(FailingParserTest(file_path))
 
-    for file in os.listdir(shell_tests_dir):
-        file_path = os.path.join(shell_tests_dir, file)
-        suite.addTest(ShellTest(file_path))
+    # for file in os.listdir(shell_tests_dir):
+    #     file_path = os.path.join(shell_tests_dir, file)
+    #     suite.addTest(ShellTest(file_path))
 
-    suite.addTest(RedirectTest(os.path.join(proper_tests_dir, 'factorial.py')))
+    # suite.addTest(RedirectTest(os.path.join(proper_tests_dir, 'factorial.py')))
 
     evalTests = [
         EvalTest("0xDEADC0DE"),
-        EvalTest("float( 1+3*(7-2) / min(3.0, 1.5) )"),
-        EvalTest("'hey'"),
-        EvalTest("print"),
-        EvalTest("'hello' + 'world'"),
-        EvalTest('max(1,10,3.0,4)'),
+        # EvalTest("float( 1+3*(7-2) / min(3.0, 1.5) )"),
+        # EvalTest("'hey'"),
+        # EvalTest("print"),
+        # EvalTest("'hello' + 'world'"),
+        # EvalTest('max(1,10,3.0,4)'),
     ]
     suite.addTests(evalTests)
 

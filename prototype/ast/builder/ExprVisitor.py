@@ -129,30 +129,14 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         name = self.visit(ctx.singleExpression(0))
         value = self.visit(ctx.singleExpression(1))
 
-        return ast.stmt.AssignStmt(target=name, value=value)
+        return ast.expr.AssignmentNode(target=name, value=value)
 
     def visitAssignmentOperatorExpression(self, ctx: PrototypeParser.AssignmentOperatorExpressionContext):
         name = self.visit(ctx.singleExpression(0))
         value = self.visit(ctx.singleExpression(1))
         op = ctx.assignmentOperator().getText()
 
-        return ast.stmt.AugAssignStmt(name=name, value=value, op=op)
-
-    def visitAnonymousFunctionDecl(self, ctx:PrototypeParser.AnonymousFunctionDeclContext):
-        params = getParameters(ctx.formalParameterList())
-        ArrowFunctionScope.enter(params)
-        scope = Scope.CURRENT
-        body_ctx = ctx.functionBody()
-        body = self.visit(body_ctx)
-        source_code = body_ctx.start.source[1].strdata
-        start_index = body_ctx.start.start + 1
-        end_index = body_ctx.stop.stop
-        source_code = source_code[start_index:end_index]
-        Scope.leave()
-        return ast.expr.AnonymousFunctionDefNode(scope=scope, body=body, source_code=source_code)
-
-    def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
-        raise NotImplementedError()
+        return ast.expr.AugAssignmentNode(name=name, value=value, op=op)
 
     def visitArrowFunction(self, ctx:PrototypeParser.ArrowFunctionContext):
         params_ctx = ctx.arrowFunctionParameters()
@@ -175,14 +159,36 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         source_code = source_code[start_index:end_index]
         Scope.leave()
         return ast.expr.ArrowFunctionDefNode(scope=scope, body=body, source_code=source_code)
-   
 
+    def getFunctionDeclNode(self, ctx):
+        params = getParameters(ctx.formalParameterList())
+        ArrowFunctionScope.enter(params)
+        scope = Scope.CURRENT
+        body_ctx = ctx.functionBody()
+        body = self.visit(body_ctx)
+        source_code = body_ctx.start.source[1].strdata
+        start_index = body_ctx.start.start + 1
+        end_index = body_ctx.stop.stop
+        source_code = source_code[start_index:end_index]
+        Scope.leave()
+        return ast.expr.AnonymousFunctionDefNode(scope=scope, body=body, source_code=source_code)
+
+    def visitAnonymousFunctionDecl(self, ctx:PrototypeParser.AnonymousFunctionDeclContext):
+        return self.getFunctionDeclNode(ctx)
+
+    def visitFunctionDeclaration(self, ctx:PrototypeParser.FunctionDeclarationContext):
+        identifier = self.visit(ctx.identifier())
+        identifier.accessType = MemoryContextAccessType.Store
+        function = self.getFunctionDeclNode(ctx)
+        return ast.expr.AssignmentNode(target=identifier, value=function)
+   
     #
     # NameNode access: Identifier, ArgumentsExpression, SubName
     #
 
     def getMemoryContextAccessType(self, parentContext):
-        if type(parentContext) is PrototypeParser.AssignmentExpressionContext or type(parentContext) is PrototypeParser.AssignmentOperatorExpressionContext:
+        if type(parentContext) is PrototypeParser.AssignmentExpressionContext or \
+            type(parentContext) is PrototypeParser.AssignmentOperatorExpressionContext:
             return MemoryContextAccessType.Store
         else:
             return MemoryContextAccessType.Load
@@ -215,17 +221,17 @@ class ExprVisitorMixin(PrototypeParserVisitor):
         left = self.visit(ctx.singleExpression())
         attrName = ctx.identifierName().getText()
         context = self.getMemoryContextAccessType(ctx.parentCtx)
-        return ast.stmt.PropertyNode(value=left, attr=attrName, accessType=context)
+        return ast.expr.PropertyNode(value=left, attr=attrName, accessType=context)
 
     def visitMemberIndexExpression(self, ctx: PrototypeParser.MemberIndexExpressionContext):
         leftNode = self.visit(ctx.singleExpression())
         if len(ctx.expressionSequence().singleExpression()) > 1:
             raise NotImplementedError()
-        subscript = ast.stmt.IndexNode(self.visit(ctx.expressionSequence().singleExpression(0)))
+        subscript = ast.expr.IndexNode(self.visit(ctx.expressionSequence().singleExpression(0)))
 
         context = self.getMemoryContextAccessType(ctx)
 
-        return ast.stmt.SubscriptNode(value=leftNode, slice=subscript, accessType=context)
+        return ast.expr.SubscriptNode(value=leftNode, slice=subscript, accessType=context)
 
     #
     # IndexNode and slice operations
